@@ -37,9 +37,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/annonces/brouillon/{id}/reprendre',[AdController::class, 'resumeDraft'])->name('ads.draft.resume');
     Route::delete('/annonces/brouillon/{id}',       [AdController::class, 'deleteDraft'])->name('ads.draft.delete');
 
-    Route::get('/annonces/{ad}',           [AdController::class, 'show'])->name('ads.show');
-    Route::get('/annonces/{ad}/partager',  [AdController::class, 'share'])->name('ads.share');
-    Route::patch('/annonces/{ad}/statut',  [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
+    Route::get('/annonces/{ad}',                      [AdController::class, 'show'])->name('ads.show');
+    Route::get('/annonces/{ad}/editer',               [AdController::class, 'edit'])->name('ads.edit');
+    Route::put('/annonces/{ad}',                      [AdController::class, 'update'])->name('ads.update');
+    Route::delete('/annonces/{ad}/photos/{photo}',    [AdController::class, 'destroyPhoto'])->name('ads.photos.destroy');
+    Route::post('/annonces/{ad}/photos/reorder',      [AdController::class, 'reorderPhotos'])->name('ads.photos.reorder');
+    Route::get('/annonces/{ad}/partager',             [AdController::class, 'share'])->name('ads.share');
+    Route::patch('/annonces/{ad}/statut',             [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
 
     // Gestion des utilisateurs (admin uniquement)
     Route::middleware('admin')->group(function () {

@@ -5,6 +5,55 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="initial-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=0"/>
     <title>{{ $ad->title }} — {{ $ad->formatted_price }}</title>
+
+    @php
+        use Illuminate\Support\Str;
+        use Illuminate\Support\Facades\Storage;
+
+        $mainPhoto = $ad->photos->first();
+        $ogImage   = $mainPhoto ? url(Storage::url($mainPhoto->path)) : null;
+        $ogUrl     = route('ads.public', ['c' => $ad->share_token]);
+
+        // Description automatique depuis les données véhicule
+        $v = $ad->vehicle;
+        $descParts = array_filter([
+            $v && $v->condition ? $v->condition                                                           : null,
+            $v && $v->mileage   ? number_format((int) $v->mileage, 0, ',', ' ') . ' km'                  : null,
+            $v && $v->fuel_type ? $v->fuel_type                                                           : null,
+            $v && $v->year      ? 'année ' . $v->year                                                     : null,
+            $ad->city           ? trim($ad->city . ($ad->postal_code ? ' (' . $ad->postal_code . ')' : '')) : null,
+            $ad->price          ? number_format((float) $ad->price, 0, ',', ' ') . ' €'                  : null,
+        ]);
+        $autoDesc = ucfirst(implode(', ', $descParts)) . '.';
+        $ogDesc   = $ad->description
+            ? Str::limit(strip_tags($ad->description), 155)
+            : $autoDesc;
+    @endphp
+
+    {{-- ── Open Graph (Facebook, WhatsApp, Messenger, LinkedIn, Telegram) ── --}}
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="{{ config('app.name', 'LeBonCoin') }}">
+    <meta property="og:title"       content="{{ $ad->title }}">
+    <meta property="og:description" content="{{ $ogDesc }}">
+    <meta property="og:url"         content="{{ $ogUrl }}">
+    <meta property="og:locale"      content="fr_FR">
+    @if($ogImage)
+    <meta property="og:image"       content="{{ $ogImage }}">
+    <meta property="og:image:alt"   content="{{ $ad->title }}">
+    @endif
+
+    {{-- ── Twitter Card ── --}}
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="{{ $ad->title }}">
+    <meta name="twitter:description" content="{{ $ogDesc }}">
+    @if($ogImage)
+    <meta name="twitter:image"       content="{{ $ogImage }}">
+    <meta name="twitter:image:alt"   content="{{ $ad->title }}">
+    @endif
+
+    {{-- ── Canonical ── --}}
+    <link rel="canonical" href="{{ $ogUrl }}">
+
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet"/>
     <style>
@@ -454,10 +503,7 @@
         <button class="btn-action" onclick="shareAd()" aria-label="Partager">
             <svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.4613 6.16913L7.5446 9.07413C7.01557 8.79113 6.41114 8.63067 5.76923 8.63067C3.68754 8.63067 2 10.3182 2 12.3999C2 14.4816 3.68754 16.1691 5.76923 16.1691C6.41112 16.1691 7.01554 16.0087 7.54456 15.7257L14.4615 18.5989C14.4614 18.6095 14.4613 18.6201 14.4613 18.6307C14.4613 20.7124 16.1489 22.3999 18.2306 22.3999C20.3123 22.3999 21.9998 20.7124 21.9998 18.6307C21.9998 16.549 20.3123 14.8614 18.2306 14.8614C16.8699 14.8614 15.6777 15.5824 15.015 16.6631L9.08232 14.1988C9.3732 13.6642 9.53846 13.0513 9.53846 12.3999C9.53846 11.7485 9.3732 11.1357 9.08233 10.6011L15.015 8.13671C15.6777 9.21743 16.87 9.93836 18.2306 9.93836C20.3123 9.93836 21.9998 8.25082 21.9998 6.16913C21.9998 4.08744 20.3123 2.3999 18.2306 2.3999C16.1489 2.3999 14.4613 4.08744 14.4613 6.16913Z"/></svg>
         </button>
-        <a href="{{ route('ads.favorites') }}" class="btn-action" aria-label="Mes favoris" style="text-decoration:none;">
-            <svg viewBox="0 0 24 24" style="fill:none;stroke:var(--on-surface);stroke-width:2;"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-        </a>
-        <button class="btn-action {{ $isLiked ? 'fav-red' : '' }}" id="favBtn" onclick="toggleFav()" aria-label="Favoris" aria-pressed="{{ $isLiked ? 'true' : 'false' }}">
+<button class="btn-action {{ $isLiked ? 'fav-red' : '' }}" id="favBtn" onclick="toggleFav()" aria-label="Favoris" aria-pressed="{{ $isLiked ? 'true' : 'false' }}">
             <span id="favCount">{{ $likesTotal }}</span>
             <svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7.61047 3C4.47262 3 2 5.7967 2 9.15721C2 11.9142 3.39876 13.8984 3.97217 14.6611C5.85936 17.1731 8.40205 18.8367 10.7565 20.377C11.0112 20.5436 11.2637 20.7089 11.513 20.8735C11.7618 21.0379 12.0775 21.0424 12.3304 20.885C12.546 20.7508 12.7639 20.6162 12.9834 20.4807C15.4422 18.9622 18.1038 17.3184 20.0514 14.6945C20.6977 13.8253 21.9997 11.8564 22 9.15476C22.0034 5.7964 19.53 3 16.3925 3C14.6028 3 13.0234 3.91646 12.0008 5.32504C10.9794 3.9162 9.39988 3 7.61047 3Z"/></svg>
         </button>
@@ -767,7 +813,7 @@ async function toggleFav(){
         });
         const d=await r.json();
         faved=d.liked;
-        document.getElementById('favCount').textContent=d.count+favOffset;
+        document.getElementById('favCount').textContent=d.count;
         btn.classList.toggle('fav-red',faved);
         btn.setAttribute('aria-pressed',String(faved));
     }catch(e){console.error(e);}

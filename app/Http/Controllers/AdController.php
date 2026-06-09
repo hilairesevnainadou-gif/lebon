@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAdRequest;
+use App\Http\Requests\UpdateAdRequest;
 use App\Models\Ad;
 use App\Models\AdDraft;
 use App\Models\AdFeature;
@@ -200,6 +201,85 @@ class AdController extends Controller
         }
     }
 
+    // ── Formulaire de modification ───────────────────────────
+
+    public function edit(Ad $ad): View
+    {
+        $ad->load(['vehicle', 'photos', 'features']);
+        return view('ads.edit', compact('ad'));
+    }
+
+    // ── Enregistrement des modifications ─────────────────────
+
+    public function update(UpdateAdRequest $request, Ad $ad): RedirectResponse
+    {
+        $adData      = $request->input('ad');
+        $vehicleData = $request->input('vehicle');
+
+        // Mise à jour de l'annonce
+        $ad->update([
+            'title'        => $adData['title'],
+            'description'  => $adData['description'] ?? null,
+            'price'        => $adData['price'],
+            'city'         => $adData['city'],
+            'postal_code'  => $adData['postal_code'] ?? null,
+            'likes_count'  => (int) ($adData['likes_count'] ?? 0),
+            'status'       => $adData['status'],
+        ]);
+
+        // Mise à jour du véhicule
+        if ($ad->vehicle) {
+            $ad->vehicle->update($vehicleData);
+        }
+
+        // Mise à jour des équipements
+        AdFeature::syncForAd($ad->id, $request->input('features', []));
+
+        // Ajout de nouvelles photos
+        if ($request->hasFile('photos')) {
+            $existingCount = $ad->photos()->count();
+            foreach ($request->file('photos') as $index => $file) {
+                if ($existingCount + $index >= 12) break;
+                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $path     = $file->storeAs('ads/' . $ad->id . '/photos', $filename, 'public');
+                AdPhoto::create([
+                    'ad_id'         => $ad->id,
+                    'disk'          => 'public',
+                    'path'          => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type'     => $file->getMimeType(),
+                    'size'          => $file->getSize(),
+                    'order'         => $existingCount + $index,
+                ]);
+            }
+        }
+
+        return redirect()->route('ads.show', $ad)
+            ->with('success', 'Annonce mise à jour avec succès.');
+    }
+
+    // ── Réorganisation des photos ────────────────────────────
+
+    public function reorderPhotos(Ad $ad, Request $request): JsonResponse
+    {
+        $ids = $request->input('order', []);
+        foreach ($ids as $position => $photoId) {
+            $ad->photos()->where('id', (int) $photoId)->update(['order' => $position]);
+        }
+        return response()->json(['success' => true]);
+    }
+
+    // ── Suppression d'une photo ──────────────────────────────
+
+    public function destroyPhoto(Ad $ad, AdPhoto $photo): JsonResponse
+    {
+        if ($photo->ad_id !== $ad->id) {
+            abort(403);
+        }
+        $photo->deleteWithFile();
+        return response()->json(['success' => true, 'remaining' => $ad->photos()->count()]);
+    }
+
     // ── Vue privée d'une annonce ─────────────────────────────
 
     public function show(Ad $ad): View
@@ -208,9 +288,9 @@ class AdController extends Controller
 
         $ad->incrementViews();
 
-        $ip          = request()->ip();
-        $isLiked     = $ad->isLikedByIp($ip);
-        $likesCount  = $ad->likes()->count();
+        $ip         = request()->ip();
+        $isLiked    = $ad->isLikedByIp($ip);
+        $likesCount = $ad->likes()->count() + ($ad->likes_count ?? 0);
 
         return view('ads.show', compact('ad', 'isLiked', 'likesCount'));
     }
@@ -232,7 +312,7 @@ class AdController extends Controller
 
         return response()->json([
             'liked' => $liked,
-            'count' => $ad->likes()->count(),
+            'count' => $ad->likes()->count() + ($ad->likes_count ?? 0),
         ]);
     }
 

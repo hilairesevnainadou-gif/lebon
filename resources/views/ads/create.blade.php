@@ -455,9 +455,13 @@
             position: relative;
             background: #eee;
             border: 2px solid transparent;
+            cursor: grab;
+            transition: opacity .2s, transform .15s, border-color .15s;
         }
         .photo-thumb:first-child { border-color: var(--orange); }
-        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-thumb.dragging { opacity: .3; cursor: grabbing; }
+        .photo-thumb.drag-over { border-color: var(--orange) !important; transform: scale(1.04); }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         .photo-thumb .thumb-del {
             position: absolute;
             top: 6px;
@@ -476,6 +480,24 @@
             color: white;
         }
         .photo-thumb:hover .thumb-del { opacity: 1; }
+        .photo-thumb .thumb-pin {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(14,30,61,.75);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity .15s;
+            z-index: 2;
+        }
+        .photo-thumb:hover .thumb-pin { opacity: 1; }
         .photo-thumb .thumb-main-badge {
             position: absolute;
             bottom: 6px;
@@ -1320,20 +1342,65 @@ function addFiles(newFiles) {
 
 function removeFile(i) { files.splice(i, 1); renderPhotos(); syncFileInput(); }
 
+function moveFile(from, to) {
+    const item = files.splice(from, 1)[0];
+    files.splice(to, 0, item);
+    renderPhotos();
+    syncFileInput();
+}
+
+let dragSrcIdx = null;
+
 function renderPhotos() {
     if (!grid) return;
+    // Libérer les anciens ObjectURL pour éviter les fuites mémoire
+    grid.querySelectorAll('img').forEach(img => URL.revokeObjectURL(img.src));
     grid.innerHTML = '';
     files.forEach((f, i) => {
         const url = URL.createObjectURL(f);
         const div = document.createElement('div');
         div.className = 'photo-thumb';
+        div.draggable = true;
+        div.dataset.idx = i;
         div.innerHTML = `
             <img src="${url}" alt="Photo ${i+1}">
-            <button type="button" class="thumb-del" onclick="removeFile(${i})">
+            <button type="button" class="thumb-del" onclick="removeFile(${i})" title="Supprimer">
                 <svg width="12" height="12" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
-            ${i === 0 ? '<div class="thumb-main-badge">Principale</div>' : ''}
+            ${i === 0
+                ? '<div class="thumb-main-badge">Principale</div>'
+                : `<button type="button" class="thumb-pin" onclick="moveFile(${i},0)" title="Mettre en 1ère position">
+                       <svg width="11" height="11" fill="white" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                   </button>`
+            }
         `;
+        // Drag events
+        div.addEventListener('dragstart', e => {
+            dragSrcIdx = i;
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => div.classList.add('dragging'), 0);
+        });
+        div.addEventListener('dragend', () => {
+            div.classList.remove('dragging');
+            grid.querySelectorAll('.photo-thumb').forEach(el => el.classList.remove('drag-over'));
+            dragSrcIdx = null;
+        });
+        div.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (dragSrcIdx !== null && dragSrcIdx !== i) {
+                grid.querySelectorAll('.photo-thumb').forEach(el => el.classList.remove('drag-over'));
+                div.classList.add('drag-over');
+            }
+        });
+        div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+        div.addEventListener('drop', e => {
+            e.preventDefault();
+            div.classList.remove('drag-over');
+            if (dragSrcIdx !== null && dragSrcIdx !== i) {
+                moveFile(dragSrcIdx, i);
+            }
+        });
         grid.appendChild(div);
     });
     if (countEl) countEl.textContent = files.length;

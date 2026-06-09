@@ -377,86 +377,7 @@
 
 <div class="app">
 
-    {{-- ===== SIDEBAR DESKTOP ===== --}}
-    <aside class="sidebar">
-        <div class="sidebar-logo">
-            <span>le<em>bon</em>coin</span>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="{{ route('ads.index') }}" class="nav-item active">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <span class="nav-text">Mes annonces</span>
-            </a>
-            <a href="#" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                <span class="nav-text">Alertes</span>
-            </a>
-            <a href="#" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span class="nav-text">Transactions</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <button onclick="openLogoutModal()" class="logout-btn">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-                </svg>
-                Déconnexion
-            </button>
-        </div>
-    </aside>
-
-    {{-- ===== MOBILE HEADER ===== --}}
-    <div class="mobile-header">
-        <button class="menu-toggle" onclick="toggleMobileMenu()">
-            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-        </button>
-        <div class="mobile-logo">le<em>bon</em>coin</div>
-        <a href="{{ route('ads.create') }}" style="color:white;">
-            <svg width="22" height="22" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M12 4v16M4 12h16"/>
-            </svg>
-        </a>
-    </div>
-
-    {{-- ===== MOBILE SIDEBAR ===== --}}
-    <div class="mobile-sidebar" id="mobileSidebar">
-        <div class="sidebar-logo">
-            <span>le<em>bon</em>coin</span>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="{{ route('ads.index') }}" class="nav-item active">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                <span class="nav-text">Mes annonces</span>
-            </a>
-            <a href="#" class="nav-item">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                <span class="nav-text">Alertes</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <button onclick="openLogoutModal()" class="logout-btn">Déconnexion</button>
-        </div>
-    </div>
-    <div class="overlay" id="overlay" onclick="toggleMobileMenu()"></div>
+    @include('partials.sidebar')
 
     {{-- ===== MAIN ===== --}}
     <div class="main">
@@ -688,6 +609,14 @@
                                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
                             </svg>
                             Obtenir le lien public
+                        </a>
+
+                        <a href="{{ route('ads.edit', $ad) }}" class="btn-outline" style="width:100%;justify-content:center;height:40px;margin-bottom:10px;border-color:var(--orange);color:var(--orange);">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Modifier l'annonce
                         </a>
 
                         <a href="{{ route('ads.index') }}" class="btn-outline" style="width:100%;justify-content:center;height:40px;">
