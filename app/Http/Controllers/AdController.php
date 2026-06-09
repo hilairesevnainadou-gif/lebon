@@ -6,6 +6,7 @@ use App\Http\Requests\StoreAdRequest;
 use App\Models\Ad;
 use App\Models\AdDraft;
 use App\Models\AdFeature;
+use App\Models\AdLike;
 use App\Models\AdPhoto;
 use App\Models\Seller;
 use App\Models\Vehicle;
@@ -137,6 +138,8 @@ class AdController extends Controller
                 'description'  => $adData['description'] ?? null,
                 'price'        => $adData['price'],
                 'city'         => $adData['city'],
+                'postal_code'  => $adData['postal_code'] ?? null,
+                'likes_count'  => (int) ($adData['likes_count'] ?? 0),
                 'status'       => 'active',
                 'published_at' => now(),
             ]);
@@ -268,6 +271,23 @@ class AdController extends Controller
             ->with('share_url', $publicUrl);
     }
 
+    // ── Vue publique : favoris par IP ────────────────────────
+
+    public function favorites(Request $request): View
+    {
+        $ip = $request->ip();
+
+        $likedAdIds = AdLike::where('ip_address', $ip)->pluck('ad_id');
+
+        $ads = Ad::with(['photos', 'vehicle', 'seller'])
+            ->whereIn('id', $likedAdIds)
+            ->where('status', 'active')
+            ->orderByDesc('published_at')
+            ->get();
+
+        return view('ads.favorites', compact('ads'));
+    }
+
     // ── Vue publique via lien partagé ────────────────────────
 
     public function publicShow(Request $request): View
@@ -279,7 +299,11 @@ class AdController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        return view('ads.public', compact('ad'));
+        $ip         = $request->ip();
+        $isLiked    = $ad->isLikedByIp($ip);
+        $likesTotal = $ad->likes()->count() + ($ad->likes_count ?? 0);
+
+        return view('ads.public', compact('ad', 'isLiked', 'likesTotal'));
     }
 
     // ── Sauvegarde du brouillon en base de données ───────────

@@ -33,6 +33,8 @@ class StoreAdRequest extends FormRequest
             'ad.description'            => ['nullable', 'string', 'max:5000'],
             'ad.price'                  => ['required', 'numeric', 'min:0'],
             'ad.city'                   => ['required', 'string', 'max:100'],
+            'ad.postal_code'            => ['nullable', 'string', 'max:10'],
+            'ad.likes_count'            => ['nullable', 'integer', 'min:0'],
 
             // ── Véhicule ──────────────────────────────────────
             'vehicle.brand'                   => ['required', 'string', 'max:100'],

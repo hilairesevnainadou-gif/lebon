@@ -944,6 +944,16 @@
                             <input type="text" name="ad[city]" id="a_city" value="{{ old('ad.city') }}" placeholder="Besancon">
                             @error('ad.city')<span class="error-msg">{{ $message }}</span>@enderror
                         </div>
+                        <div class="field">
+                            <label>Code postal</label>
+                            <input type="text" name="ad[postal_code]" id="a_postal" value="{{ old('ad.postal_code') }}" placeholder="25000" maxlength="10">
+                            @error('ad.postal_code')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="field">
+                            <label>Nombre de favoris</label>
+                            <input type="number" name="ad[likes_count]" id="a_likes" value="{{ old('ad.likes_count', 0) }}" min="0" placeholder="0">
+                            @error('ad.likes_count')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
                         <div class="field col-2">
                             <label>Description</label>
                             <textarea name="ad[description]" rows="5" placeholder="Decrivez l'etat general, l'historique d'entretien...">{{ old('ad.description') }}</textarea>

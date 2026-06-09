@@ -24,6 +24,8 @@ class Ad extends Model
         'description',
         'price',
         'city',
+        'postal_code',
+        'likes_count',
         'status',
         'published_at',
         'share_token',
@@ -34,6 +36,7 @@ class Ad extends Model
         'price'        => 'decimal:2',
         'published_at' => 'datetime',
         'views'        => 'integer',
+        'likes_count'  => 'integer',
     ];
 
     // ── Relations ────────────────────────────────────────────

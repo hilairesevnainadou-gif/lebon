@@ -655,6 +655,30 @@
                             </span>
                         </div>
 
+                        @if($ad->status !== 'sold')
+                        <form method="POST" action="{{ route('ads.toggle-status', $ad) }}" style="margin-bottom:16px;">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" style="
+                                width:100%;height:42px;border-radius:12px;
+                                font-size:13px;font-weight:700;cursor:pointer;
+                                display:flex;align-items:center;justify-content:center;gap:8px;
+                                border:1.5px solid {{ $ad->status === 'active' ? '#e55a00' : '#1a7a4a' }};
+                                background:{{ $ad->status === 'active' ? '#fff0e8' : '#eaf5ef' }};
+                                color:{{ $ad->status === 'active' ? '#e55a00' : '#1a7a4a' }};
+                                font-family:inherit;
+                            ">
+                                @if($ad->status === 'active')
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                    Mettre en pause
+                                @else
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    Réactiver l'annonce
+                                @endif
+                            </button>
+                        </form>
+                        @endif
+
                         <a href="{{ route('ads.share', $ad) }}" class="share-btn">
                             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <circle cx="18" cy="5" r="3"/>

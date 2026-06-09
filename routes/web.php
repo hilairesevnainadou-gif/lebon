@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
+Route::get('/vehicule/favoris',          [AdController::class, 'favorites'])->name('ads.favorites');
 Route::get('/annonces/{ad}/reserver',    [AdController::class, 'reserve'])->name('ads.reserve');
 Route::post('/annonces/{ad}/like',       [AdController::class, 'toggleLike'])->name('ads.like');
 
