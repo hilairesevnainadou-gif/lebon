@@ -165,6 +165,29 @@
     .plan-link { font-size: 12px; color: rgb(21,34,51); text-decoration: underline; line-height: 1.6; display: block; cursor: pointer; }
     .voir-plus-btn { background: transparent; border: none; cursor: pointer; font-size: 14px; font-weight: 600; color: rgb(15,24,37); padding: 0; align-self: flex-start; text-decoration: underline; }
 
+    /* ── Sélection interactive de formule ── */
+    .dur-col.dur-clickable { cursor: pointer; border-radius: 8px; padding: 4px 5px; transition: background .15s; }
+    .dur-col.dur-clickable:hover { background: rgb(255,233,222); }
+    .dur-col.dur-active { background: rgb(255,233,222); }
+    .dur-col.dur-active .dur-label,
+    .dur-col.dur-active .dur-price { color: rgb(137,56,15); }
+
+    .selectable-plan { cursor: pointer; transition: outline .15s; outline: 2px solid transparent; }
+    .selectable-plan.selected { outline: 2px solid rgb(236,90,19); }
+
+    .plan-select-indicator {
+        display: none;
+        align-items: center; gap: 6px;
+        background: rgb(236,90,19);
+        color: #fff;
+        font-size: 13px; font-weight: 700;
+        padding: 8px 14px;
+        border-radius: 10px;
+        margin-top: 4px;
+        width: fit-content;
+    }
+    .selectable-plan.selected .plan-select-indicator { display: flex; }
+
     /* ── Bon à savoir ── */
     .bonsavoir {
         background: #fff;
@@ -257,24 +280,31 @@
 
             <div class="plans-wrap">
 
-                <div class="plan-card">
+                {{-- ── Avec Garantie ── --}}
+                <div class="plan-card selectable-plan" id="plan-avec" data-plan="avec_garantie_3" onclick="selectPlan(this)">
                     <div class="plan-header">
                         <div class="plan-header-title">Avec Garantie Panne Mécanique</div>
                     </div>
 
                     <div class="durations">
-                        <div class="dur-col"><div class="dur-label">3 mois</div><div class="dur-price">139 €</div></div>
+                        <div class="dur-col dur-clickable {{ true ? 'dur-active' : '' }}" data-plan="avec_garantie_3" onclick="event.stopPropagation();pickDur(this)">
+                            <div class="dur-label">3 mois</div><div class="dur-price">139 €</div>
+                        </div>
                         <div class="dur-sep"></div>
-                        <div class="dur-col"><div class="dur-label">6 mois</div><div class="dur-price">259 €</div></div>
+                        <div class="dur-col dur-clickable" data-plan="avec_garantie_6" onclick="event.stopPropagation();pickDur(this)">
+                            <div class="dur-label">6 mois</div><div class="dur-price">259 €</div>
+                        </div>
                         <div class="dur-sep"></div>
-                        <div class="dur-col"><div class="dur-label">12 mois</div><div class="dur-price">399 €</div></div>
+                        <div class="dur-col dur-clickable" data-plan="avec_garantie_12" onclick="event.stopPropagation();pickDur(this)">
+                            <div class="dur-label">12 mois</div><div class="dur-price">399 €</div>
+                        </div>
                     </div>
 
                     <div class="dur-divider"></div>
 
                     <div class="partner-row">
                         <span>En partenariat avec</span>
-                        <img src="/reserve/bnpp-cardif.avif" alt="BNPP Cardif" height="22" style="height:22px;width:auto;object-fit:contain;"/>
+                        <img src="{{ asset('assets/reserve/bnpp-cardif.avif') }}" alt="BNPP Cardif" height="22" style="height:22px;width:auto;object-fit:contain;"/>
                     </div>
 
                     @foreach([
@@ -291,10 +321,12 @@
                     </div>
                     @endforeach
 
-                    <button class="voir-plus-btn" type="button">Voir plus</button>
+                    <button class="voir-plus-btn" type="button" onclick="event.stopPropagation()">Voir plus</button>
+                    <div class="plan-select-indicator"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><polyline points="20 6 9 17 4 12"/></svg> Sélectionnée</div>
                 </div>
 
-                <div class="plan-card">
+                {{-- ── Sans Garantie ── --}}
+                <div class="plan-card selectable-plan" id="plan-sans" data-plan="sans_garantie" onclick="selectPlan(this)">
                     <div class="plan-header">
                         <div class="plan-header-title">Sans Garantie Panne Mécanique</div>
                     </div>
@@ -305,11 +337,12 @@
                     <div class="plan-txt">Votre argent est protégé sur un compte séquestre jusqu'au jour de la transaction.</div>
 
                     <div style="display:flex;flex-direction:column;gap:2px;margin-top:4px;">
-                        <a class="plan-link" href="#">Plus de détails sur la garantie</a>
-                        <a class="plan-link" href="#">Document d'information sur les produits d'assurance</a>
-                        <a class="plan-link" href="#">Fiche d'information pré-contractuelle</a>
-                        <a class="plan-link" href="#">Conditions générales de la garantie</a>
+                        <a class="plan-link" href="#" onclick="event.stopPropagation()">Plus de détails sur la garantie</a>
+                        <a class="plan-link" href="#" onclick="event.stopPropagation()">Document d'information sur les produits d'assurance</a>
+                        <a class="plan-link" href="#" onclick="event.stopPropagation()">Fiche d'information pré-contractuelle</a>
+                        <a class="plan-link" href="#" onclick="event.stopPropagation()">Conditions générales de la garantie</a>
                     </div>
+                    <div class="plan-select-indicator"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><polyline points="20 6 9 17 4 12"/></svg> Sélectionnée</div>
                 </div>
 
             </div>
@@ -329,11 +362,42 @@
         <div class="cgu-txt">
             En cliquant sur «&nbsp;Réserver mon véhicule&nbsp;», <a href="#">j'accepte les Conditions Générales d'Utilisation.</a>
         </div>
-        <a href="{{ route('ads.reserve.form', $ad) }}?plan=sans_garantie" class="btn-reserve">
+        <a href="{{ route('ads.reserve.form', $ad) }}?plan=sans_garantie"
+           id="ctaBtn" class="btn-reserve">
             Réserver mon véhicule
         </a>
     </div>
 
 </div>
+<script>
+const BASE_URL = '{{ route('ads.reserve.form', $ad) }}';
+let currentPlan = 'sans_garantie';
+
+function selectPlan(card) {
+    document.querySelectorAll('.selectable-plan').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    currentPlan = card.dataset.plan;
+    updateCta();
+}
+
+function pickDur(col) {
+    // Déselectionner les autres colonnes dans la même carte
+    col.closest('.plan-card').querySelectorAll('.dur-clickable').forEach(c => c.classList.remove('dur-active'));
+    col.classList.add('dur-active');
+    // Activer la carte parente
+    const card = col.closest('.selectable-plan');
+    selectPlan(card);
+    currentPlan = col.dataset.plan;
+    card.dataset.plan = col.dataset.plan;
+    updateCta();
+}
+
+function updateCta() {
+    document.getElementById('ctaBtn').href = BASE_URL + '?plan=' + encodeURIComponent(currentPlan);
+}
+
+// Sélectionner la formule Sans Garantie par défaut
+document.getElementById('plan-sans').click();
+</script>
 </body>
 </html>
