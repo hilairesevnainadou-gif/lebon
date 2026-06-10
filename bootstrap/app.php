@@ -14,7 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+        // Utilisateur déjà connecté sur une route guest → tableau de bord
+        $middleware->redirectUsersTo(fn () => route('ads.index'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Utilisateur non connecté sur une route protégée → 404 (ne révèle pas l'existence de la route)
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, \Illuminate\Http\Request $request) {
+            abort(404);
+        });
     })->create();
