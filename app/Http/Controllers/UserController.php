@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UserInvitation;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
@@ -30,27 +33,28 @@ class UserController extends Controller
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:100'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
             'is_admin' => ['nullable', 'boolean'],
         ], [
-            'name.required'      => 'Le nom est obligatoire.',
-            'email.required'     => "L'email est obligatoire.",
-            'email.unique'       => 'Cette adresse email est déjà utilisée.',
-            'password.required'  => 'Le mot de passe est obligatoire.',
-            'password.confirmed' => 'Les mots de passe ne correspondent pas.',
-            'password.min'       => 'Le mot de passe doit faire au moins 8 caractères.',
+            'name.required'  => 'Le nom est obligatoire.',
+            'email.required' => "L'email est obligatoire.",
+            'email.unique'   => 'Cette adresse email est déjà utilisée.',
         ]);
 
-        User::create([
-            'name'              => $data['name'],
-            'email'             => $data['email'],
-            'password'          => Hash::make($data['password']),
-            'is_admin'          => $request->boolean('is_admin'),
-            'email_verified_at' => now(),
+        $token = Str::random(64);
+
+        $user = User::create([
+            'name'             => $data['name'],
+            'email'            => $data['email'],
+            'password'         => Hash::make(Str::random(32)),
+            'is_admin'         => $request->boolean('is_admin'),
+            'invitation_token' => $token,
         ]);
+
+        $activationUrl = route('invitation.show', $token);
+        Mail::to($user->email)->send(new UserInvitation($user, $activationUrl));
 
         return redirect()->route('users.index')
-            ->with('success', "L'utilisateur {$data['name']} a été créé avec succès.");
+            ->with('success', "Un email d'activation a été envoyé à {$data['email']}.");
     }
 
     public function edit(User $user): View

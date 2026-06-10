@@ -267,17 +267,16 @@
                         @enderror
                     </div>
 
+                    @if($user)
+                    {{-- Modification : champ mot de passe optionnel --}}
                     <div class="form-group">
-                        <label class="form-label" for="password">
-                            Mot de passe {{ $user ? '' : '*' }}
-                            @if($user) <span class="req"></span> @endif
-                        </label>
+                        <label class="form-label" for="password">Nouveau mot de passe</label>
                         <div class="pass-toggle">
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                placeholder="{{ $user ? 'Laisser vide pour ne pas changer' : '••••••••' }}"
+                                placeholder="Laisser vide pour ne pas changer"
                                 autocomplete="new-password"
                                 class="form-control @error('password') is-error @enderror"
                             />
@@ -317,6 +316,19 @@
                             </button>
                         </div>
                     </div>
+                    @else
+                    {{-- Création : invitation par email --}}
+                    <div class="form-group" style="background:var(--orange-lt);border:1px solid rgba(249,115,22,.25);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;">
+                        <svg width="18" height="18" fill="none" stroke="var(--orange)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <div>
+                            <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:2px;">Email d'activation automatique</div>
+                            <div class="hint" style="margin:0;">Un email sera envoyé à l'utilisateur avec un lien pour définir son mot de passe et activer son compte.</div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="form-group" style="margin-bottom:0;">
                         <div

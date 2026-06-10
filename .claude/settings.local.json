@@ -3,7 +3,11 @@
     "allow": [
       "Bash(powershell.exe -Command 'Get-ChildItem '\\\\''d:\\\\xampp\\\\htdocs\\\\lebon\\\\resources\\\\views'\\\\'' -Name | Where-Object { $_ -like '\\\\''*Peugeot*'\\\\'' }')",
       "Bash(php -r ' *)",
-      "Bash(powershell.exe -Command ' *)"
+      "Bash(powershell.exe -Command ' *)",
+      "Bash(php -l d:/xampp/htdocs/lebon/app/Http/Controllers/UserController.php)",
+      "Bash(php -l d:/xampp/htdocs/lebon/app/Http/Controllers/InvitationController.php)",
+      "Bash(php -l d:/xampp/htdocs/lebon/app/Mail/UserInvitation.php)",
+      "Bash(php -l d:/xampp/htdocs/lebon/routes/web.php)"
     ]
   }
 }

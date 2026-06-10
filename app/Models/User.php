@@ -16,6 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'invitation_token',
     ];
 
     protected $hidden = [
@@ -41,6 +42,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return (bool) $this->is_admin;
+    }
+
+    public function isActivated(): bool
+    {
+        return $this->invitation_token === null;
     }
 
     public function hasSeller(): bool

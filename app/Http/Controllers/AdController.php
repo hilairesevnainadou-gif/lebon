@@ -23,6 +23,17 @@ use Illuminate\View\View;
 
 class AdController extends Controller
 {
+    // ── Autorisation : vendeur ne peut agir que sur ses annonces ─
+
+    private function authorizeAd(Ad $ad): void
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->isAdmin() && ($ad->seller === null || $ad->seller->user_id !== $user->id)) {
+            abort(403);
+        }
+    }
+
     // ── Liste des annonces (publiées + brouillons) ────────────
 
     public function index(): View
@@ -206,6 +217,7 @@ class AdController extends Controller
 
     public function edit(Ad $ad): View
     {
+        $this->authorizeAd($ad);
         $ad->load(['vehicle', 'photos', 'features']);
         return view('ads.edit', compact('ad'));
     }
@@ -214,6 +226,7 @@ class AdController extends Controller
 
     public function update(UpdateAdRequest $request, Ad $ad): RedirectResponse
     {
+        $this->authorizeAd($ad);
         $adData      = $request->input('ad');
         $vehicleData = $request->input('vehicle');
 
@@ -263,6 +276,7 @@ class AdController extends Controller
 
     public function reorderPhotos(Ad $ad, Request $request): JsonResponse
     {
+        $this->authorizeAd($ad);
         $ids = $request->input('order', []);
         foreach ($ids as $position => $photoId) {
             $ad->photos()->where('id', (int) $photoId)->update(['order' => $position]);
@@ -274,6 +288,7 @@ class AdController extends Controller
 
     public function destroyPhoto(Ad $ad, AdPhoto $photo): JsonResponse
     {
+        $this->authorizeAd($ad);
         if ($photo->ad_id !== $ad->id) {
             abort(403);
         }
@@ -285,6 +300,7 @@ class AdController extends Controller
 
     public function show(Ad $ad): View
     {
+        $this->authorizeAd($ad);
         $ad->load(['seller', 'vehicle', 'photos', 'features']);
 
         $ad->incrementViews();
@@ -424,6 +440,7 @@ class AdController extends Controller
 
     public function toggleStatus(Ad $ad): RedirectResponse
     {
+        $this->authorizeAd($ad);
         $ad->status = $ad->status === 'active' ? 'paused' : 'active';
         $ad->save();
 
@@ -437,6 +454,7 @@ class AdController extends Controller
 
     public function share(Ad $ad): RedirectResponse
     {
+        $this->authorizeAd($ad);
         if (!$ad->share_token) {
             $ad->update(['share_token' => Str::random(10)]);
         }

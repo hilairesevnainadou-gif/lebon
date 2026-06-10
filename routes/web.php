@@ -3,8 +3,13 @@
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+
+// ── Activation de compte (invitation admin) ───────────────────
+Route::get('/activation/{token}',  [InvitationController::class, 'show'])->name('invitation.show');
+Route::post('/activation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
 
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
