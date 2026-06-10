@@ -244,7 +244,7 @@
 
     {{-- ── Logo Pack Sérénité ── --}}
     <div class="pack-logo">
-        <img src="/RESERVE/pack.avif" alt="Pack Sérénité" style="height:38px;width:auto;object-fit:contain;"/>
+        <img src="{{ asset('/RESERVE/pack.avif') }}" alt="Pack Sérénité" style="height:38px;width:auto;object-fit:contain;"/>
     </div>
 
     {{-- ── Section principale ── --}}
@@ -304,7 +304,7 @@
 
                     <div class="partner-row">
                         <span>En partenariat avec</span>
-                        <img src="{{ asset('assets/reserve/bnpp-cardif.avif') }}" alt="BNPP Cardif" height="22" style="height:22px;width:auto;object-fit:contain;"/>
+                        <img src="{{ asset('/reserve/bnpp-cardif.avif') }}" alt="BNPP Cardif" height="22" style="height:22px;width:auto;object-fit:contain;"/>
                     </div>
 
                     @foreach([
