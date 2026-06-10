@@ -257,7 +257,7 @@
     <div class="sec-title">Choisissez votre formule :</div>
     <div class="partner-row">
         <span>En partenariat avec</span>
-        <img src="/reserve/bnpp-cardif.avif" alt="BNP Paribas Cardif"/>
+        <img src="{{ asset('/RESERVE/bnpp-cardif.avif') }}" alt="BNP Paribas Cardif"/>
     </div>
 
     {{-- ── Formulaire + cartes ── --}}
@@ -336,7 +336,7 @@
     <div class="legal-block">
         <div class="partner-row" style="padding:0;">
             <span>En partenariat avec</span>
-            <img src="/reserve/bnpp-cardif.avif" alt="BNP Paribas Cardif"/>
+            <img src="{{ asset('/RESERVE/bnpp-cardif.avif') }}" alt="BNP Paribas Cardif"/>
         </div>
         <div class="legal-txt" id="legalTxt">
             Ma garantie Maximale, Optimale et Essentielle sont des produits proposés par CARDIF Assurances R...
