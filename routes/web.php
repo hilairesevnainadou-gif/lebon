@@ -13,6 +13,7 @@ Route::get('/annonces/{ad}/reserver',                           [AdController::c
 Route::get('/annonces/{ad}/reserver/formulaire',                [AdController::class, 'reserveForm'])->name('ads.reserve.form');
 Route::get('/annonces/{ad}/reserver/recap',                     [AdController::class, 'reserveRecap'])->name('ads.reserve.recap');
 Route::get('/annonces/{ad}/reserver/virement',                  [AdController::class, 'reserveVirement'])->name('ads.reserve.virement');
+Route::post('/annonces/{ad}/reserver/virement-declare',         [AdController::class, 'storeVirementDeclaration'])->name('ads.reserve.virement.declare');
 Route::post('/annonces/{ad}/reserver',                          [AdController::class, 'storeReservation'])->name('ads.reserve.store');
 Route::get('/annonces/{ad}/reservation/{reservation}/confirmee',[AdController::class, 'reservationConfirmed'])->name('ads.reserve.confirmed');
 Route::post('/annonces/{ad}/like',                             [AdController::class, 'toggleLike'])->name('ads.like');

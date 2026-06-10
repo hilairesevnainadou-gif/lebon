@@ -339,10 +339,10 @@ class AdController extends Controller
     // ── Enregistrement de la réservation ─────────────────────
 
     private array $reservationPlans = [
-        'sans_garantie'   => ['label' => 'Sans Garantie Panne Mécanique', 'price' => 19.99],
-        'garantie_3mois'  => ['label' => 'Avec Garantie — 3 mois',        'price' => 139],
-        'garantie_6mois'  => ['label' => 'Avec Garantie — 6 mois',        'price' => 259],
-        'garantie_12mois' => ['label' => 'Avec Garantie — 12 mois',       'price' => 399],
+        'sans_garantie' => ['label' => 'Sans Garantie Panne Mécanique', 'price' => 19.99],
+        'garantie_3'    => ['label' => 'Avec Garantie — 3 mois',        'price' => 139],
+        'garantie_6'    => ['label' => 'Avec Garantie — 6 mois',        'price' => 259],
+        'garantie_12'   => ['label' => 'Avec Garantie — 12 mois',       'price' => 399],
     ];
 
     public function reserveRecap(Ad $ad): View
@@ -359,11 +359,30 @@ class AdController extends Controller
         $ad->load(['vehicle', 'photos', 'seller.defaultBankAccount']);
         $planKey  = request()->query('plan', 'sans_garantie');
         $planInfo = $this->reservationPlans[$planKey] ?? $this->reservationPlans['sans_garantie'];
-        $amount      = (float) request()->query('amount', $ad->price ?? 0);
-        $total       = $amount + $planInfo['price'];
+        // amount reçu = total déjà calculé (vehicle + plan) depuis reserve-confirm
+        $total       = (float) request()->query('amount', ($ad->price ?? 0) + $planInfo['price']);
+        $amount      = $total - $planInfo['price'];
         $bankAccount = $ad->seller?->defaultBankAccount;
 
         return view('ads.reserve-done', compact('ad', 'planInfo', 'planKey', 'amount', 'total', 'bankAccount'));
+    }
+
+    public function storeVirementDeclaration(Request $request, Ad $ad): \Illuminate\Http\JsonResponse
+    {
+        $plan      = $request->input('plan', 'sans_garantie');
+        $amount    = (float) $request->input('amount', $ad->price ?? 0);
+        $reference = $request->input('reference', '');
+
+        Reservation::create([
+            'ad_id'     => $ad->id,
+            'plan'      => $plan,
+            'amount'    => $amount,
+            'reference' => $reference,
+            'status'    => 'virement_declared',
+            'token'     => Str::random(32),
+        ]);
+
+        return response()->json(['ok' => true]);
     }
 
     public function storeReservation(Request $request, Ad $ad): RedirectResponse

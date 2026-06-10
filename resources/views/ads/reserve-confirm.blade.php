@@ -291,9 +291,10 @@ function updateTotal(val) {
 }
 
 function goToVirement() {
-    var raw    = document.getElementById('negotiated_amount').value;
-    var amount = raw === '' ? vehiclePrice : (parseFloat(raw) || vehiclePrice);
-    window.location.href = virementUrl + '?plan=' + encodeURIComponent(planKey) + '&amount=' + amount;
+    var raw        = document.getElementById('negotiated_amount').value;
+    var vehicleAmt = raw === '' ? vehiclePrice : (parseFloat(raw) || vehiclePrice);
+    var total      = vehicleAmt + planPrice;
+    window.location.href = virementUrl + '?plan=' + encodeURIComponent(planKey) + '&amount=' + total;
 }
 </script>
 </body>
