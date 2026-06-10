@@ -96,6 +96,16 @@
     .rib-head svg { width: 18px; height: 18px; stroke: rgb(21,34,51); fill: none; stroke-width: 2; flex-shrink: 0; }
     .rib-label { font-size: 13px; color: rgb(58,71,87); }
     .rib-value { font-size: 14px; font-weight: 800; color: rgb(21,34,51); margin-top: 1px; }
+
+    /* ── Titulaire : style indication grise ── */
+    .rib-value-hint {
+        font-size: 13px; font-weight: 400;
+        color: rgb(120,130,145);
+        font-style: italic;
+        margin-top: 1px;
+        line-height: 1.4;
+    }
+
     .rib-bic-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .btn-copy {
         display: inline-flex; align-items: center; gap: 7px;
@@ -277,10 +287,13 @@
                         <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
                         RIB Compte séquestre leboncoin
                     </div>
+
+                    {{-- ══ TITULAIRE : nom de la carte grise ══ --}}
                     <div>
                         <div class="rib-label">Titulaire</div>
-                        <div class="rib-value">{{ $titulaire }}</div>
+                        <div class="rib-value-hint">Renseignez le nom de la carte grise</div>
                     </div>
+
                     <div>
                         <div class="rib-label">IBAN</div>
                         <div class="rib-value" id="ibanValue">{{ $ibanFmt }}</div>
