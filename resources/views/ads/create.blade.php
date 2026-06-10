@@ -1063,44 +1063,77 @@
                     <div class="form-card-title">Details supplementaires</div>
                     <div class="grid-3">
                         <div class="field">
-                            <label>Carrosserie</label>
-                            <select name="vehicle[body_type]">
+                            <label>Nombre de portes</label>
+                            <input type="number" name="vehicle[doors]" id="v_doors" value="{{ old('vehicle.doors') }}" min="1" max="9" placeholder="5">
+                        </div>
+                        <div class="field">
+                            <label>Nombre de places</label>
+                            <input type="number" name="vehicle[seats]" id="v_seats" value="{{ old('vehicle.seats') }}" min="1" max="20" placeholder="5">
+                        </div>
+                        <div class="field">
+                            <label>Type de vehicule</label>
+                            <select name="vehicle[body_type]" id="v_body_type">
                                 <option value="">Selectionner</option>
-                                <option value="Berline" {{ old('vehicle.body_type') == 'Berline' ? 'selected' : '' }}>Berline</option>
-                                <option value="SUV" {{ old('vehicle.body_type') == 'SUV' ? 'selected' : '' }}>SUV</option>
-                                <option value="Coupe" {{ old('vehicle.body_type') == 'Coupe' ? 'selected' : '' }}>Coupe</option>
-                                <option value="Cabriolet" {{ old('vehicle.body_type') == 'Cabriolet' ? 'selected' : '' }}>Cabriolet</option>
+                                @foreach(['Berline','SUV','Coupe','Cabriolet','Break','Citadine','Monospace','Utilitaire','Pickup'] as $bt)
+                                <option value="{{ $bt }}" {{ old('vehicle.body_type') == $bt ? 'selected' : '' }}>{{ $bt }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="field">
+                            <label>Finition Constructeur</label>
+                            <input type="text" name="vehicle[finish]" id="v_finish" value="{{ old('vehicle.finish') }}" placeholder="Pack M, Executive...">
+                        </div>
+                        <div class="field">
+                            <label>Version Constructeur</label>
+                            <input type="text" name="vehicle[version]" id="v_version" value="{{ old('vehicle.version') }}" placeholder="xDrive, AMG Line...">
+                        </div>
+                        <div class="field">
+                            <label>Etat du vehicule</label>
+                            <select name="vehicle[condition]" id="v_condition">
+                                <option value="">Selectionner</option>
+                                @foreach(['Excellent','Très bon','Bon','Correct','À réparer'] as $c)
+                                <option value="{{ $c }}" {{ old('vehicle.condition') == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Sellerie</label>
+                            <input type="text" name="vehicle[upholstery]" id="v_upholstery" value="{{ old('vehicle.upholstery') }}" placeholder="Cuir, Tissu...">
+                        </div>
+                        <div class="field">
+                            <label>Historique et entretien</label>
+                            <input type="text" name="vehicle[history]" id="v_history" value="{{ old('vehicle.history') }}" placeholder="Carnet entretien, 1 seul proprietaire...">
+                        </div>
+                        <div class="field">
+                            <label>Permis requis</label>
+                            <input type="text" name="vehicle[license]" id="v_license" value="{{ old('vehicle.license') }}" placeholder="B, A, A2...">
+                        </div>
+                        <div class="field">
                             <label>Couleur</label>
-                            <input type="text" name="vehicle[color]" value="{{ old('vehicle.color') }}" placeholder="Noir">
+                            <input type="text" name="vehicle[color]" id="v_color" value="{{ old('vehicle.color') }}" placeholder="Noir, Blanc...">
+                        </div>
+                        <div class="field">
+                            <label>Crit'Air</label>
+                            <select name="vehicle[critair]" id="v_critair">
+                                <option value="">Selectionner</option>
+                                @foreach([0=>"0 (Electrique)",1=>"1",2=>"2",3=>"3",4=>"4",5=>"5"] as $cv => $cl)
+                                <option value="{{ $cv }}" {{ old('vehicle.critair') == $cv ? 'selected' : '' }}>{{ $cl }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Puissance fiscale</label>
+                            <div class="input-group">
+                                <input type="number" name="vehicle[fiscal_power]" id="v_fiscal_power" value="{{ old('vehicle.fiscal_power') }}" placeholder="14" min="0">
+                                <span class="input-group-prefix">CV</span>
+                            </div>
                         </div>
                         <div class="field">
                             <label>Puissance DIN</label>
                             <div class="input-group">
-                                <input type="number" name="vehicle[din_power]" value="{{ old('vehicle.din_power') }}" placeholder="245" min="0">
+                                <input type="number" name="vehicle[din_power]" id="v_din_power" value="{{ old('vehicle.din_power') }}" placeholder="245" min="0">
                                 <span class="input-group-prefix">ch</span>
                             </div>
-                        </div>
-                        <div class="field">
-                            <label>Crit'Air</label>
-                            <select name="vehicle[critair]">
-                                <option value="">Selectionner</option>
-                                <option value="0" {{ old('vehicle.critair') == '0' ? 'selected' : '' }}>0 (Electrique)</option>
-                                <option value="1" {{ old('vehicle.critair') == '1' ? 'selected' : '' }}>1</option>
-                                <option value="2" {{ old('vehicle.critair') == '2' ? 'selected' : '' }}>2</option>
-                                <option value="3" {{ old('vehicle.critair') == '3' ? 'selected' : '' }}>3</option>
-                            </select>
-                        </div>
-                        <div class="field">
-                            <label>Etat</label>
-                            <select name="vehicle[condition]">
-                                <option value="">Selectionner</option>
-                                <option value="Excellent" {{ old('vehicle.condition') == 'Excellent' ? 'selected' : '' }}>Excellent</option>
-                                <option value="Tres bon" {{ old('vehicle.condition') == 'Tres bon' ? 'selected' : '' }}>Tres bon</option>
-                                <option value="Bon" {{ old('vehicle.condition') == 'Bon' ? 'selected' : '' }}>Bon</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -1440,6 +1473,11 @@ function buildRecap() {
             <div class="recap-row"><span>Annee</span><span>${escapeHtml(v('v_year'))}</span></div>
             <div class="recap-row"><span>Kilometrage</span><span>${v('v_mileage') !== '—' ? Number(v('v_mileage')).toLocaleString('fr-FR') + ' km' : '—'}</span></div>
             <div class="recap-row"><span>Carburant / Boite</span><span>${escapeHtml(fuel)} / ${escapeHtml(gearbox)}</span></div>
+            <div class="recap-row"><span>Portes / Places</span><span>${escapeHtml(v('v_doors'))} / ${escapeHtml(v('v_seats'))}</span></div>
+            <div class="recap-row"><span>Finition / Version</span><span>${escapeHtml(v('v_finish'))} / ${escapeHtml(v('v_version'))}</span></div>
+            <div class="recap-row"><span>Etat</span><span>${escapeHtml(v('v_condition'))}</span></div>
+            <div class="recap-row"><span>Couleur</span><span>${escapeHtml(v('v_color'))}</span></div>
+            <div class="recap-row"><span>Permis</span><span>${escapeHtml(v('v_license'))}</span></div>
         </div>
         <div class="recap-card"><div class="recap-card-title">Photos (${files.length})</div>
             <div class="recap-photos">${files.slice(0, 6).map(f => `<img src="${URL.createObjectURL(f)}" class="recap-photo" alt="">`).join('')}${files.length > 6 ? `<div style="width:50px;height:50px;border-radius:8px;background:#eee;display:flex;align-items:center;justify-content:center;font-weight:700;">+${files.length-6}</div>` : ''}</div>
@@ -1558,19 +1596,18 @@ buildNav();
                 const gearboxRadio = document.querySelector(`input[name="vehicle[gearbox]"][value="${draft.vehicle.gearbox}"]`);
                 if (gearboxRadio) gearboxRadio.checked = true;
             }
-            if (draft.vehicle.color) {
-                const colorInput = document.querySelector('input[name="vehicle[color]"]');
-                if (colorInput) colorInput.value = draft.vehicle.color;
-            }
-            if (draft.vehicle.din_power) {
-                const powerInput = document.querySelector('input[name="vehicle[din_power]"]');
-                if (powerInput) powerInput.value = draft.vehicle.din_power;
-            }
+            const fields = ['color','din_power','fiscal_power','doors','seats','upholstery','finish','version','history','license'];
+            fields.forEach(f => {
+                if (draft.vehicle[f]) {
+                    const el = document.querySelector(`[name="vehicle[${f}]"]`);
+                    if (el) el.value = draft.vehicle[f];
+                }
+            });
             if (draft.vehicle.body_type) {
                 const bodySelect = document.querySelector('select[name="vehicle[body_type]"]');
                 if (bodySelect) bodySelect.value = draft.vehicle.body_type;
             }
-            if (draft.vehicle.critair) {
+            if (draft.vehicle.critair !== undefined && draft.vehicle.critair !== null) {
                 const critairSelect = document.querySelector('select[name="vehicle[critair]"]');
                 if (critairSelect) critairSelect.value = draft.vehicle.critair;
             }

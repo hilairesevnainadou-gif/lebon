@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(powershell.exe -Command 'Get-ChildItem '\\\\''d:\\\\xampp\\\\htdocs\\\\lebon\\\\resources\\\\views'\\\\'' -Name | Where-Object { $_ -like '\\\\''*Peugeot*'\\\\'' }')",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(powershell.exe -Command ' *)"
     ]
   }
 }

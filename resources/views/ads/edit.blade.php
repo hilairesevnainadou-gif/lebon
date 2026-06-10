@@ -420,6 +420,22 @@
                             <input type="text" name="vehicle[upholstery]" value="{{ old('vehicle.upholstery', $ad->vehicle->upholstery) }}" placeholder="Cuir">
                         </div>
                         <div class="field">
+                            <label>Finition Constructeur</label>
+                            <input type="text" name="vehicle[finish]" value="{{ old('vehicle.finish', $ad->vehicle->finish) }}" placeholder="Pack M, Executive...">
+                        </div>
+                        <div class="field">
+                            <label>Version Constructeur</label>
+                            <input type="text" name="vehicle[version]" value="{{ old('vehicle.version', $ad->vehicle->version) }}" placeholder="xDrive, AMG Line...">
+                        </div>
+                        <div class="field">
+                            <label>Historique et entretien</label>
+                            <input type="text" name="vehicle[history]" value="{{ old('vehicle.history', $ad->vehicle->history) }}" placeholder="Carnet entretien, 1 propriétaire...">
+                        </div>
+                        <div class="field">
+                            <label>Permis requis</label>
+                            <input type="text" name="vehicle[license]" value="{{ old('vehicle.license', $ad->vehicle->license) }}" placeholder="B, A, A2...">
+                        </div>
+                        <div class="field">
                             <label>Crit'Air</label>
                             <select name="vehicle[critair]">
                                 <option value="">—</option>

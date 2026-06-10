@@ -18,6 +18,8 @@ class Vehicle extends Model
         'mileage',
         'fuel_type',
         'gearbox',
+        'finish',
+        'version',
         'doors',
         'seats',
         'body_type',
@@ -28,6 +30,8 @@ class Vehicle extends Model
         'upholstery',
         'first_registration_date',
         'condition',
+        'history',
+        'license',
     ];
 
     protected $casts = [

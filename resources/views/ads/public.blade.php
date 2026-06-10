@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr" data-theme="light">
 
 <head>
@@ -6,7 +6,7 @@
     <meta name="viewport" content="initial-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=0"/>
     <title>{{ $ad->title }} — {{ $ad->formatted_price }}</title>
 
-    @php
+     @php
         use Illuminate\Support\Str;
         use Illuminate\Support\Facades\Storage;
 
@@ -14,7 +14,6 @@
         $ogImage   = $mainPhoto ? url(Storage::url($mainPhoto->path)) : null;
         $ogUrl     = route('ads.public', ['c' => $ad->share_token]);
 
-        // Description automatique depuis les données véhicule
         $v = $ad->vehicle;
         $descParts = array_filter([
             $v && $v->condition ? $v->condition                                                           : null,
@@ -30,7 +29,6 @@
             : $autoDesc;
     @endphp
 
-    {{-- ── Open Graph (Facebook, WhatsApp, Messenger, LinkedIn, Telegram) ── --}}
     <meta property="og:type"        content="website">
     <meta property="og:site_name"   content="{{ config('app.name', 'LeBonCoin') }}">
     <meta property="og:title"       content="{{ $ad->title }}">
@@ -41,14 +39,11 @@
     <meta property="og:image"       content="{{ $ogImage }}">
     <meta property="og:image:alt"   content="{{ $ad->title }}">
     @endif
-
-    {{-- ── Twitter Card ── --}}
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title"       content="{{ $ad->title }}">
     <meta name="twitter:description" content="{{ $ogDesc }}">
     @if($ogImage)
     <meta name="twitter:image"       content="{{ $ogImage }}">
-    <meta name="twitter:image:alt"   content="{{ $ad->title }}">
     @endif
 
     {{-- ── Canonical ── --}}
@@ -114,11 +109,11 @@
     }
     .sticky-info { flex: 1; min-width: 0; }
     .sticky-title {
-        font-size: 1.4rem; font-weight: 500;
+        font-size: 1.4rem; font-weight: 700;            /* gras comme sur la vue */
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         line-height: 1.3;
     }
-    .sticky-price { font-size: 1.6rem; font-weight: 700; }
+    .sticky-price { font-size: 1.6rem; font-weight: 800; }   /* prix bien gras */
     .sticky-fav {
         width: 44px; height: 44px; border-radius: 8px;
         background: var(--surface);
@@ -183,7 +178,7 @@
         display: flex; align-items: center; gap: 8px;
         background: var(--support); color: #fff;
         height: 44px; padding: 0 16px; border-radius: 8px;
-        font-size: 1.4rem; font-weight: 500;
+        font-size: 1.4rem; font-weight: 700;            /* label du bouton bleu en gras */
         pointer-events: all;
     }
     .btn-similar svg { width: 20px; height: 20px; fill: #fff; }
@@ -206,23 +201,25 @@
     }
     .dot.active { background: #fff; }
 
-    /* ══ TITLE CARD — CARTE FLOTTANTE (CORRIGÉ) ═══ */
+    /* ══ TITLE CARD — CARTE FLOTTANTE ═══════════ */
     .title-card {
         position: relative;
         z-index: 15;
-        margin: -28px 16px 0;                  /* chevauche la photo + marges gauche/droite */
+        margin: -28px 16px 0;
         background: var(--surface);
-        border-radius: 16px;                   /* arrondi sur les 4 coins */
+        border-radius: 16px;
         box-shadow: 0 4px 20px rgba(0,0,0,.12);
         padding: 24px 22px 22px;
     }
     .ad-title {
-        font-size: 2.2rem; font-weight: 600; line-height: 1.25;
+        font-size: 2.2rem; font-weight: 800;            /* titre très gras comme sur la vue */
+        line-height: 1.25;
         margin-bottom: 12px; word-break: break-word;
         color: var(--on-surface);
     }
     .ad-meta {
-        font-size: 1.6rem; color: var(--neutral);
+        font-size: 1.5rem; font-weight: 400;            /* meta reste fine */
+        color: var(--neutral);
         margin-bottom: 16px;
         display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
         line-height: 1.4;
@@ -230,19 +227,20 @@
     .ad-meta a { color: var(--neutral); }
     .ad-meta .sep { color: var(--outline-h); }
     .ad-price {
-        font-size: 2.9rem; font-weight: 700; letter-spacing: -0.5px;
+        font-size: 2.4rem; font-weight: 800;            /* prix très gras */
+        letter-spacing: -0.5px;
         margin-bottom: 10px; color: var(--on-surface);
     }
-    .ad-date { font-size: 1.4rem; color: var(--neutral); margin-bottom: 16px; }
+    .ad-date { font-size: 1.3rem; font-weight: 400; color: var(--neutral); margin-bottom: 16px; }
     .tag-secure {
         display: inline-flex; align-items: center; gap: 6px;
         background: var(--support-bg); color: var(--support-txt);
         height: 30px; padding: 0 12px; border-radius: 99px;
-        font-size: 1.4rem; font-weight: 500;
+        font-size: 1.3rem; font-weight: 700;            /* badge paiement sécurisé en gras */
     }
     .tag-secure svg { width: 15px; height: 15px; fill: var(--support); }
 
-    /* ══ BOUTON RÉSERVER — HORS CARTE, SUR FOND GRIS (CORRIGÉ) ═══ */
+    /* ══ BOUTON RÉSERVER — HORS CARTE ═══════════ */
     .reserve-section {
         background: transparent;
         padding: 20px 16px 0;
@@ -259,7 +257,6 @@
     .btn-reserve:active { background: var(--main-hover); }
     .btn-reserve svg { width: 20px; height: 20px; fill: #fff; }
 
-    /* séparateur fin sous le bouton (CORRIGÉ) */
     .cta-divider { height: 1px; background: var(--outline); margin: 20px 16px 0; }
 
     /* ══ DIVIDERS ════════════════════════════════ */
@@ -292,7 +289,7 @@
     /* ══ SECTIONS ════════════════════════════════ */
     .section { background: var(--surface); padding: 24px 16px; border-top: 1px solid var(--outline); }
     .section-pay { background: var(--surface); padding: 40px 16px 24px; border-bottom: 1px solid var(--outline); }
-    .section-h2 { font-size: 2rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; color: var(--on-surface); }
+    .section-h2 { font-size: 2rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; color: var(--on-surface); }
 
     /* ══ PAIEMENT SÉCURISÉ ═══════════════════════ */
     .pay-text { font-size: 1.4rem; line-height: 1.6; margin-bottom: 16px; }
@@ -300,7 +297,7 @@
     .pay-item { display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; }
     .pay-item svg { width: 16px; height: 16px; fill: var(--support); flex-shrink: 0; margin-top: 2px; }
     .pay-item p { font-size: 1.4rem; line-height: 1.6; }
-    .link-more { font-size: 1.4rem; font-weight: 500; color: var(--on-surface); text-decoration: underline; text-underline-offset: 2px; display: inline-block; margin-top: 8px; }
+    .link-more { font-size: 1.4rem; font-weight: 700; color: var(--on-surface); text-decoration: underline; text-underline-offset: 2px; display: inline-block; margin-top: 8px; }
 
     /* ══ CRITÈRES ════════════════════════════════ */
     .criteria-list { display: flex; flex-direction: column; }
@@ -309,19 +306,20 @@
     .criteria-icon svg { width: 22px; height: 22px; fill: var(--on-surface); opacity: .45; }
     .criteria-left { flex: 1; }
     .criteria-lbl { font-size: 1.4rem; color: var(--neutral); font-weight: 400; }
-    .criteria-val { font-size: 1.6rem; font-weight: 500; color: var(--on-surface); text-align: right; }
-    .criteria-val a { font-size: 1.6rem; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; color: var(--on-surface); }
-    .btn-more-criteria { display: inline-block; margin-top: 8px; font-size: 1.4rem; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; color: var(--on-surface); padding: 0; background: none; border: none; cursor: pointer; }
+    .criteria-val { font-size: 1.6rem; font-weight: 700; color: var(--on-surface); text-align: right; }
+    .criteria-val a { font-size: 1.6rem; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; color: var(--on-surface); }
+    .btn-more-criteria { display: inline-block; margin-top: 8px; font-size: 1.4rem; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; color: var(--on-surface); padding: 0; background: none; border: none; cursor: pointer; }
 
     /* ══ DESCRIPTION ═════════════════════════════ */
     .desc-text { font-size: 1.4rem; line-height: 1.75; color: var(--on-surface); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .desc-text.expanded { display: block; overflow: visible; -webkit-line-clamp: unset; }
     .desc-full { display: none; white-space: pre-line; font-size: 1.4rem; line-height: 1.75; }
-    .btn-desc-more { margin-top: 8px; font-size: 1.4rem; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+    .btn-desc-more { margin-top: 8px; font-size: 1.4rem; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
 
     /* ══ FINANCEMENT ═════════════════════════════ */
     .tag-sponsored { display: inline-flex; align-items: center; border: 1px solid var(--outline-h); color: var(--on-surface); height: 28px; padding: 0 10px; border-radius: 99px; font-size: 1.3rem; font-weight: 400; margin-bottom: 12px; }
     .fin-disclaimer { font-size: 1.4rem; color: var(--on-surface); opacity: .55; line-height: 1.5; margin-bottom: 16px; }
-    .fin-subtitle { font-size: 1.6rem; font-weight: 500; margin-bottom: 4px; color: var(--on-surface); }
+    .fin-subtitle { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; color: var(--on-surface); }
     .fin-cetelem-row { display: flex; align-items: center; gap: 6px; margin-bottom: 20px; }
     .fin-avec { font-size: 1.4rem; color: var(--on-surface); }
     .fin-cetelem { font-size: 1.9rem; font-weight: 600; font-style: italic; color: var(--cetelem); font-family: Georgia, serif; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cetelem); }
@@ -334,7 +332,7 @@
     .fin-euro { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: var(--neutral); pointer-events: none; }
     .fin-duration-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .fin-dur-label { font-size: 1.4rem; color: var(--on-surface); }
-    .fin-dur-val { font-size: 1.5rem; font-weight: 500; color: var(--support); }
+    .fin-dur-val { font-size: 1.5rem; font-weight: 700; color: var(--support); }
     .fin-slider { -webkit-appearance: none; width: 100%; height: 3px; border-radius: 2px; background: linear-gradient(to right, var(--support) 24.6%, #d6d4cf 24.6%); outline: none; margin-bottom: 6px; }
     .fin-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--support); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.25); cursor: pointer; }
     .fin-limits { display: flex; justify-content: space-between; font-size: 1.2rem; color: var(--neutral); margin-bottom: 0; }
@@ -343,7 +341,7 @@
     .fin-legal { font-size: 1.1rem; color: var(--neutral); line-height: 1.5; opacity: .65; margin-top: 16px; }
 
     /* ══ LOCALISATION ════════════════════════════ */
-    .loc-city { font-size: 1.6rem; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 4px; }
+    .loc-city { font-size: 1.6rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 4px; }
     .loc-city span { font-size: 1.4rem; font-weight: 400; color: var(--neutral); }
     .map-box { width: 100%; height: 220px; border-radius: 8px; background: #d4e6c3; overflow: hidden; position: relative; cursor: pointer; }
     .map-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -373,7 +371,7 @@
         height: 36px; padding: 0 20px;
         border-radius: 99px;
         border: 1.5px solid var(--support);
-        color: var(--support); font-weight: 500;
+        color: var(--support); font-weight: 700;
         font-size: 1.4rem; font-family: var(--font);
         background: transparent;
         display: flex; align-items: center;
@@ -381,7 +379,7 @@
     }
     .btn-follow:active { background: var(--support-bg); }
     .seller-name {
-        font-size: 1.8rem; font-weight: 600;
+        font-size: 1.8rem; font-weight: 800;            /* nom du vendeur très gras */
         color: var(--on-surface);
         display: block;
         margin-bottom: 14px;
@@ -409,13 +407,13 @@
 
     /* ══ FOOTER LINKS ════════════════════════════ */
     .footer-links { padding: 24px 16px; border-top: 1px solid var(--outline); background: var(--surface); display: flex; flex-direction: column; gap: 24px; }
-    .footer-link { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
+    .footer-link { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
     .footer-link svg { width: 16px; height: 16px; fill: currentColor; }
 
     /* ══ BREADCRUMB ══════════════════════════════ */
     .breadcrumb-wrap { padding: 16px; background: var(--surface); border-top: 1px solid var(--outline); }
     .breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 1.2rem; color: var(--neutral); }
-    .breadcrumb a { color: var(--neutral); font-weight: 500; text-decoration: underline; }
+    .breadcrumb a { color: var(--neutral); font-weight: 600; text-decoration: underline; }
     .bc-sep { width: 12px; height: 12px; fill: var(--neutral); }
 
     /* ══ BOTTOM CTA FIXE ═════════════════════════ */
@@ -534,7 +532,7 @@
     @endif
 </div>
 
-{{-- ── TITLE CARD FLOTTANTE (CORRIGÉ) ─────────── --}}
+{{-- ── TITLE CARD FLOTTANTE ───────────────────── --}}
 <div class="title-card">
     <h1 class="ad-title">{{ $ad->title }}</h1>
     <p class="ad-meta">
@@ -554,7 +552,7 @@
     </div>
 </div>
 
-{{-- ── BOUTON RÉSERVER — HORS CARTE (CORRIGÉ) ──── --}}
+{{-- ── BOUTON RÉSERVER — HORS CARTE ─────────────── --}}
 <div class="reserve-section">
     <a href="{{ route('ads.reserve', $ad->id) }}" class="btn-reserve" id="p2pvo_adview_cta_main">
         <svg viewBox="0 0 24 24"><path d="M19.1054 4.23499L13.2885 2.18799C12.5655 1.93734 11.7844 1.93734 11.0615 2.18799L5.24453 4.23499C3.89833 4.70287 2.96762 5.98956 3.00086 7.4517C3.06734 10.5849 3.42467 13.4674 5.26946 16.4585C6.75693 18.8731 8.88426 20.753 11.3689 21.8308C11.8841 22.0564 12.4575 22.0564 12.9727 21.8308C15.4657 20.753 17.5847 18.8731 19.0722 16.4501C20.917 13.459 21.266 10.5849 21.3325 7.4517C21.3657 5.98956 20.435 4.70287 19.0888 4.23499H19.1054ZM12.7068 3.85901L18.5237 5.906C19.1802 6.13995 19.604 6.74987 19.5874 7.41828C19.5209 10.4261 19.1885 12.9326 17.5847 15.5227C16.2718 17.6533 14.427 19.2742 12.283 20.2099C12.2082 20.2433 12.1251 20.2433 12.0503 20.2099C9.91469 19.2825 8.06158 17.6533 6.74862 15.5311C5.15312 12.941 4.81242 10.4261 4.74594 7.41828C4.72932 6.74987 5.16143 6.13995 5.8096 5.906L11.6265 3.85901C11.9755 3.73368 12.3495 3.73368 12.6902 3.85901H12.7068Z"/><path d="M8.0782 12.2559C7.85384 12.5817 7.85384 12.7906 7.85384 12.9995C7.85384 12.9995 7.92863 13.1916 8.0782 13.3337C8.22778 13.4757 8.4106 13.5426 8.61835 13.5426H9.2499C9.38286 14.1107 9.58229 14.612 9.84821 15.0548C10.1972 15.6146 10.646 16.0407 11.1861 16.3332C11.7262 16.6256 12.3329 16.7676 13.006 16.7676C13.4381 16.7676 13.8702 16.7008 14.3023 16.5587C14.751 16.4084 15.1333 16.1828 15.4574 15.882L14.5017 14.5702C14.2774 14.7206 14.053 14.8292 13.8286 14.8961C13.6126 14.9546 13.3799 14.9796 13.114 14.9796C12.7899 14.9796 12.5074 14.9128 12.2498 14.7875C12.0005 14.6538 11.7761 14.4449 11.5933 14.1525C11.4936 13.9854 11.4022 13.7849 11.3274 13.5509H12.5822C12.7899 13.5509 12.9727 13.4757 13.114 13.3253C13.2553 13.1833 13.3301 12.9995 13.3301 12.799C13.3301 12.5984 13.2553 12.4146 13.114 12.2726C12.9727 12.1222 12.7899 12.047 12.5822 12.047H11.0781C11.0781 11.9384 11.0781 11.8298 11.0781 11.7211C11.0781 11.6376 11.0781 11.554 11.0781 11.4705H12.5822C12.7899 11.4705 12.9727 11.3953 13.114 11.2449C13.2553 11.1029 13.3301 10.9191 13.3301 10.7185C13.3301 10.518 13.2553 10.3342 13.114 10.1922C12.9727 10.0418 12.7899 9.96658 12.5822 9.96658H11.3274C11.4022 9.74099 11.4936 9.54047 11.5933 9.38172C11.7761 9.08929 11.9922 8.88877 12.2415 8.76345C12.4991 8.62141 12.7899 8.55457 13.1057 8.55457C13.355 8.55457 13.6043 8.58799 13.8453 8.65483C14.0863 8.72167 14.2857 8.82193 14.4685 8.96397C14.6347 9.08929 14.8092 9.17285 14.992 9.17285H15.0003C15.1748 9.16449 15.3244 9.106 15.4491 8.99739C15.5737 8.88877 15.6485 8.74674 15.6984 8.58799C15.7482 8.42089 15.7565 8.25379 15.715 8.08668C15.6734 7.90287 15.5654 7.74412 15.4075 7.61044C15.0585 7.30966 14.6763 7.09243 14.2441 6.95875C13.8286 6.82507 13.4132 6.76658 12.9893 6.76658C12.3162 6.76658 11.7096 6.90862 11.1695 7.20104C10.6293 7.49347 10.1806 7.91958 9.83159 8.47937C9.56567 8.91384 9.36624 9.40679 9.23328 9.98329H8.60173C8.39398 9.98329 8.21116 10.0585 8.06158 10.2005C7.91201 10.3426 7.83722 10.5264 7.83722 10.7352C7.83722 10.9441 7.91201 11.1363 8.06158 11.2783C8.21116 11.4204 8.39398 11.4872 8.60173 11.4872H9.04215C9.04215 11.5708 9.04215 11.6627 9.04215 11.7462C9.04215 11.8465 9.04215 11.9551 9.04215 12.0637H8.60173C8.39398 12.0637 8.21116 12.1389 8.06158 12.2809L8.0782 12.2559Z"/></svg>
@@ -594,36 +592,76 @@
     <h2 class="section-h2">Les informations clés</h2>
     <div class="criteria-list">
         @php
-        $svgMarque  = '<path fill-rule="evenodd" clip-rule="evenodd" d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/>';
-        $svgModele  = '<path fill-rule="evenodd" clip-rule="evenodd" d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/>';
-        $svgAnnee   = '<path fill-rule="evenodd" clip-rule="evenodd" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13zM7 10h5v5H7z"/>';
-        $svgKm      = '<path fill-rule="evenodd" clip-rule="evenodd" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>';
-        $svgEnergie = '<path fill-rule="evenodd" clip-rule="evenodd" d="M17 5H7c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H7V7h10v12zm-5-4c-1.1 0-2-.9-2-2V9h4v4c0 1.1-.9 2-2 2z"/>';
-        $svgBoite   = '<path fill-rule="evenodd" clip-rule="evenodd" d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>';
-        $svgPortes  = '<path fill-rule="evenodd" clip-rule="evenodd" d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16zm-7-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"/>';
-        $svgPlaces  = '<path fill-rule="evenodd" clip-rule="evenodd" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>';
-        $rows = array_filter([
-            ['Marque',             $svgMarque,  $ad->vehicle->brand,       true],
-            ['Modèle',             $svgModele,  $ad->vehicle->model,       true],
-            ['Année modèle',       $svgAnnee,   $ad->vehicle->year,        false],
-            ['Kilométrage',        $svgKm,      $ad->vehicle->mileage ? number_format($ad->vehicle->mileage,0,',',' ').' km' : null, false],
-            ['Énergie',            $svgEnergie, ucfirst($ad->vehicle->fuel_type ?? ''), false],
-            ['Boîte de vitesse',   $svgBoite,   ucfirst($ad->vehicle->gearbox ?? ''), false],
-            ['Nombre de portes',   $svgPortes,  $ad->vehicle->doors ?: null, false],
-            ['Nombre de place(s)', $svgPlaces,  $ad->vehicle->seats ?: null, false],
-        ], fn($r) => !empty($r[2]));
+        $v = $ad->vehicle;
+        $iList = '<path d="M3 4h18v2H3zm0 7h18v2H3zm0 7h18v2H3z"/>';
+        $iCal  = '<path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V8h14v13zM7 10h5v5H7z"/>';
+        $iKm   = '<path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>';
+        $iFuel = '<path d="M17 5H7c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H7V7h10v12zm-5-4c-1.1 0-2-.9-2-2V9h4v4c0 1.1-.9 2-2 2z"/>';
+        $iGear = '<path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>';
+        $iDoor = '<path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16zm-7-8c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"/>';
+        $iSeat = '<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>';
+        $iBolt = '<path d="M7 2v11h3v9l7-12h-4l4-8z"/>';
+        $iDoc  = '<path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>';
+        $iLeaf = '<path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 2-8 2 6-3 9-7 9-7-2 5-4 11-9 13 1-5-3-8-5-11z"/>';
+        $iColor= '<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>';
+        $iBody = '<path d="M18.92 5.01C18.72 4.42 18.16 4 17.5 4h-11c-.66 0-1.21.42-1.42 1.01L3 11v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 6h10.29l1.08 3.11H5.77L6.85 6zM19 17H5v-6h14v6zm-2.5-4c-.83 0-1.5.67-1.5 1.5S15.67 16 16.5 16s1.5-.67 1.5-1.5S17.33 13 16.5 13zm-9 0c-.83 0-1.5.67-1.5 1.5S6.67 16 7.5 16 9 15.33 9 14.5 8.33 13 7.5 13z"/>';
+        $iStar = '<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>';
+        $iHist = '<path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>';
+        $iKey  = '<path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>';
+
+        // Ordre exact demandé — toujours afficher portes et places (avec "—" si vide)
+        $allRows = [
+            ['Marque',                           $iList,  $v->brand,       true,  true],
+            ['Modèle',                           $iList,  $v->model,       true,  true],
+            ['Année modèle',                     $iCal,   $v->year ? (string)$v->year : null,  false, false],
+            ['Kilométrage',                      $iKm,    $v->mileage ? number_format($v->mileage,0,',',' ').' km' : null, false, false],
+            ['Énergie',                          $iFuel,  $v->fuel_type  ? ucfirst($v->fuel_type)  : null, false, false],
+            ['Boîte de vitesse',                 $iGear,  $v->gearbox    ? ucfirst($v->gearbox)    : null, false, false],
+            ['Nombre de portes',                 $iDoor,  $v->doors      ? (string)$v->doors  : '—', false, true],
+            ['Nombre de place(s)',               $iSeat,  $v->seats      ? (string)$v->seats  : '—', false, true],
+            ['Finition Constructeur',            $iList,  $v->finish     ? ucfirst($v->finish)     : null, false, false],
+            ['Version Constructeur',             $iList,  $v->version    ? ucfirst($v->version)    : null, false, false],
+            ['Date de première mise en circulation', $iCal, $v->first_registration_date ? $v->first_registration_date->format('d/m/Y') : null, false, false],
+            ['État du véhicule',                 $iStar,  $v->condition  ? ucfirst($v->condition)  : null, false, false],
+            ['Type de véhicule',                 $iBody,  $v->body_type  ? ucfirst($v->body_type)  : null, false, false],
+            ['Sellerie',                         $iSeat,  $v->upholstery ? ucfirst($v->upholstery) : null, false, false],
+            ['Historique et entretien',          $iHist,  $v->history    ? ucfirst($v->history)    : null, false, false],
+            ['Couleur',                          $iColor, $v->color      ? ucfirst($v->color)      : null, false, false],
+            ['Crit\'Air',                        $iLeaf,  $v->critair !== null ? 'Crit\'Air '.$v->critair : null, false, false],
+            ['Puissance fiscale',                $iDoc,   $v->fiscal_power ? $v->fiscal_power.' CV' : null, false, false],
+            ['Puissance DIN',                    $iBolt,  $v->din_power    ? $v->din_power.' ch'    : null, false, false],
+            ['Permis',                           $iKey,   $v->license    ? ucfirst($v->license)    : null, false, false],
+        ];
+        // Filtrer : garder si valeur non vide OU si always_show = true
+        $rows = array_values(array_filter($allRows, fn($r) => !empty($r[2]) || $r[4]));
+        $rowsFirst = array_slice($rows, 0, 6);
+        $rowsMore  = array_slice($rows, 6);
         @endphp
-        @foreach($rows as $r)
+
+        @foreach($rowsFirst as $r)
         <div class="criteria-row">
-            <div class="criteria-icon"><svg viewBox="0 0 24 24">{!! $r[1] !!}</svg></div>
+            <div class="criteria-icon"><svg viewBox="0 0 24 24" fill="currentColor">{!! $r[1] !!}</svg></div>
             <div class="criteria-left"><span class="criteria-lbl">{{ $r[0] }}</span></div>
-            <div class="criteria-val">
-                @if($r[3])<a href="#" rel="noopener">{{ $r[2] }}</a>@else{{ $r[2] }}@endif
-            </div>
+            <div class="criteria-val">@if($r[3])<a href="#" rel="noopener">{{ $r[2] }}</a>@else{{ $r[2] }}@endif</div>
         </div>
         @endforeach
+
+        @if(count($rowsMore) > 0)
+        <div id="criteriaMore" style="display:none;">
+            @foreach($rowsMore as $r)
+            <div class="criteria-row">
+                <div class="criteria-icon"><svg viewBox="0 0 24 24" fill="currentColor">{!! $r[1] !!}</svg></div>
+                <div class="criteria-left"><span class="criteria-lbl">{{ $r[0] }}</span></div>
+                <div class="criteria-val">@if($r[3])<a href="#" rel="noopener">{{ $r[2] }}</a>@else{{ $r[2] }}@endif</div>
+            </div>
+            @endforeach
+        </div>
+        <button class="btn-more-criteria" id="criteriaBtn" type="button"
+                onclick="toggleCriteria()" aria-expanded="false">
+            Voir les {{ count($rowsMore) }} critères supplémentaires
+        </button>
+        @endif
     </div>
-    <a href="#" class="btn-more-criteria">Voir les 11 critères supplémentaires</a>
 </div>
 @endif
 
@@ -632,7 +670,6 @@
 <div class="section" style="border-top:none;">
     <h2 class="section-h2">Description</h2>
     <p class="desc-text" id="descShort">{{ $ad->description }}</p>
-    <p class="desc-full" id="descFull">{{ $ad->description }}</p>
     <button class="btn-desc-more" id="descBtn" onclick="toggleDesc()" aria-expanded="false">Voir plus</button>
 </div>
 @endif
@@ -824,11 +861,19 @@ function shareAd(){
     else{navigator.clipboard.writeText(window.location.href).then(()=>alert('Lien copié !'));}
 }
 function toggleDesc(){
-    const s=document.getElementById('descShort'),f=document.getElementById('descFull'),b=document.getElementById('descBtn');
-    const open=f.style.display==='block';
-    f.style.display=open?'none':'block';
-    s.style.display=open?'-webkit-box':'none';
+    const s=document.getElementById('descShort'),b=document.getElementById('descBtn');
+    const open=s.classList.contains('expanded');
+    s.classList.toggle('expanded',!open);
     b.textContent=open?'Voir plus':'Voir moins';
+    b.setAttribute('aria-expanded',String(!open));
+}
+function toggleCriteria(){
+    const m=document.getElementById('criteriaMore'),b=document.getElementById('criteriaBtn');
+    if(!m||!b)return;
+    if(!b.dataset.more) b.dataset.more=b.textContent;
+    const open=m.style.display==='block';
+    m.style.display=open?'none':'block';
+    b.textContent=open?b.dataset.more:'Voir moins';
     b.setAttribute('aria-expanded',String(!open));
 }
 const sl=document.getElementById('finSlider');
@@ -839,7 +884,7 @@ if(sl){
         sl.style.background=`linear-gradient(to right,var(--support) ${p}%,rgba(32,39,48,.15) ${p}%)`;
     });
 }
-const sBar=document.getElementById('stickyBar'),tc=document.getElementById('titleCard');
+const sBar=document.getElementById('stickyBar');
 if(sBar){
     window.addEventListener('scroll',()=>{sBar.classList.toggle('visible',window.scrollY>340);},{passive:true});
 }

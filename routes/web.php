@@ -20,44 +20,44 @@ Route::post('/annonces/{ad}/like',                             [AdController::cl
 
 // ── Auth ──────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
-    Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/a3f7k',  [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/a3f7k', [AuthController::class, 'login'])->name('login.post');
 
     // Mot de passe oublié
-    Route::get('/mot-de-passe-oublie',  [ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
-    Route::post('/mot-de-passe-oublie', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
-    Route::get('/reinitialiser/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reinitialiser',        [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
+    Route::get('/c4x8p',         [ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
+    Route::post('/c4x8p',        [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/c4x8p/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/c4x8p/save',   [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 });
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/b9m2r', [AuthController::class, 'logout'])->name('logout');
 
 // ── Zone authentifiée ─────────────────────────────────────────
 Route::middleware('auth')->group(function () {
-    Route::get('/annonces',              [AdController::class, 'index'])->name('ads.index');
-    Route::get('/annonces/creer',        [AdController::class, 'create'])->name('ads.create');
-    Route::post('/annonces',             [AdController::class, 'store'])->name('ads.store');
+    Route::get('/d6t1z',              [AdController::class, 'index'])->name('ads.index');
+    Route::get('/d6t1z/creer',        [AdController::class, 'create'])->name('ads.create');
+    Route::post('/d6t1z',             [AdController::class, 'store'])->name('ads.store');
 
     // Brouillons (avant {ad} pour éviter le conflit de route)
-    Route::post('/annonces/brouillon',              [AdController::class, 'saveDraft'])->name('ads.draft');
-    Route::get('/annonces/brouillons',              [AdController::class, 'getDrafts'])->name('ads.drafts');
-    Route::get('/annonces/brouillon/{id}/reprendre',[AdController::class, 'resumeDraft'])->name('ads.draft.resume');
-    Route::delete('/annonces/brouillon/{id}',       [AdController::class, 'deleteDraft'])->name('ads.draft.delete');
+    Route::post('/d6t1z/brouillon',              [AdController::class, 'saveDraft'])->name('ads.draft');
+    Route::get('/d6t1z/brouillons',              [AdController::class, 'getDrafts'])->name('ads.drafts');
+    Route::get('/d6t1z/brouillon/{id}/reprendre',[AdController::class, 'resumeDraft'])->name('ads.draft.resume');
+    Route::delete('/d6t1z/brouillon/{id}',       [AdController::class, 'deleteDraft'])->name('ads.draft.delete');
 
-    Route::get('/annonces/{ad}',                      [AdController::class, 'show'])->name('ads.show');
-    Route::get('/annonces/{ad}/editer',               [AdController::class, 'edit'])->name('ads.edit');
-    Route::put('/annonces/{ad}',                      [AdController::class, 'update'])->name('ads.update');
-    Route::delete('/annonces/{ad}/photos/{photo}',    [AdController::class, 'destroyPhoto'])->name('ads.photos.destroy');
-    Route::post('/annonces/{ad}/photos/reorder',      [AdController::class, 'reorderPhotos'])->name('ads.photos.reorder');
-    Route::get('/annonces/{ad}/partager',             [AdController::class, 'share'])->name('ads.share');
-    Route::patch('/annonces/{ad}/statut',             [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
+    Route::get('/d6t1z/{ad}',                      [AdController::class, 'show'])->name('ads.show');
+    Route::get('/d6t1z/{ad}/editer',               [AdController::class, 'edit'])->name('ads.edit');
+    Route::put('/d6t1z/{ad}',                      [AdController::class, 'update'])->name('ads.update');
+    Route::delete('/d6t1z/{ad}/photos/{photo}',    [AdController::class, 'destroyPhoto'])->name('ads.photos.destroy');
+    Route::post('/d6t1z/{ad}/photos/reorder',      [AdController::class, 'reorderPhotos'])->name('ads.photos.reorder');
+    Route::get('/d6t1z/{ad}/partager',             [AdController::class, 'share'])->name('ads.share');
+    Route::patch('/d6t1z/{ad}/statut',             [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
 
     // Gestion des utilisateurs (admin uniquement)
     Route::middleware('admin')->group(function () {
-        Route::get('/utilisateurs',                [UserController::class, 'index'])->name('users.index');
-        Route::get('/utilisateurs/creer',          [UserController::class, 'create'])->name('users.create');
-        Route::post('/utilisateurs',               [UserController::class, 'store'])->name('users.store');
-        Route::get('/utilisateurs/{user}/editer',  [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/utilisateurs/{user}',         [UserController::class, 'update'])->name('users.update');
-        Route::delete('/utilisateurs/{user}',      [UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/e5w9n',                [UserController::class, 'index'])->name('users.index');
+        Route::get('/e5w9n/creer',          [UserController::class, 'create'])->name('users.create');
+        Route::post('/e5w9n',               [UserController::class, 'store'])->name('users.store');
+        Route::get('/e5w9n/{user}/editer',  [UserController::class, 'edit'])->name('users.edit');
+        Route::put('/e5w9n/{user}',         [UserController::class, 'update'])->name('users.update');
+        Route::delete('/e5w9n/{user}',      [UserController::class, 'destroy'])->name('users.destroy');
     });
 });
