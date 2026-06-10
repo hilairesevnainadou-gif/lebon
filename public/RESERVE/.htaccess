@@ -1,0 +1,4 @@
+# Servir le fichier hash Bubble.io sans extension comme JavaScript
+<Files "v833ccba57c9e4d2798f2e76cebdd09a11778172276447">
+    ForceType application/javascript
+</Files>

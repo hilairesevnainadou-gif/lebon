@@ -9,8 +9,11 @@ use Illuminate\Support\Facades\Route;
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
 Route::get('/vehicule/favoris',          [AdController::class, 'favorites'])->name('ads.favorites');
-Route::get('/annonces/{ad}/reserver',    [AdController::class, 'reserve'])->name('ads.reserve');
-Route::post('/annonces/{ad}/like',       [AdController::class, 'toggleLike'])->name('ads.like');
+Route::get('/annonces/{ad}/reserver',                           [AdController::class, 'reserve'])->name('ads.reserve');
+Route::get('/annonces/{ad}/reserver/formulaire',                [AdController::class, 'reserveForm'])->name('ads.reserve.form');
+Route::post('/annonces/{ad}/reserver',                          [AdController::class, 'storeReservation'])->name('ads.reserve.store');
+Route::get('/annonces/{ad}/reservation/{reservation}/confirmee',[AdController::class, 'reservationConfirmed'])->name('ads.reserve.confirmed');
+Route::post('/annonces/{ad}/like',                             [AdController::class, 'toggleLike'])->name('ads.like');
 
 // ── Auth ──────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

@@ -8,6 +8,7 @@ use App\Models\Ad;
 use App\Models\AdDraft;
 use App\Models\AdFeature;
 use App\Models\AdLike;
+use App\Models\Reservation;
 use App\Models\AdPhoto;
 use App\Models\Seller;
 use App\Models\Vehicle;
@@ -316,12 +317,59 @@ class AdController extends Controller
         ]);
     }
 
-    // ── Réservation (public → redirige vers login) ───────────
+    // ── Formulaire de réservation (public) ───────────────────
 
-    public function reserve(Ad $ad): RedirectResponse
+    public function reserve(Ad $ad): View
     {
-        return redirect()->route('login')
-            ->with('info', 'Connectez-vous pour réserver cette annonce.');
+        $ad->load(['vehicle', 'photos', 'seller']);
+        $ip         = request()->ip();
+        $isLiked    = $ad->isLikedByIp($ip);
+        $likesTotal = $ad->likes()->count() + ($ad->likes_count ?? 0);
+        return view('ads.reserve', compact('ad', 'isLiked', 'likesTotal'));
+    }
+
+    public function reserveForm(Ad $ad): View
+    {
+        $ad->load(['vehicle', 'photos', 'seller']);
+        $plan     = request()->query('plan', 'sans_garantie');
+        $duration = request()->query('duration', null);
+        return view('ads.reserve-form', compact('ad', 'plan', 'duration'));
+    }
+
+    // ── Enregistrement de la réservation ─────────────────────
+
+    public function storeReservation(Request $request, Ad $ad): RedirectResponse
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name'  => ['required', 'string', 'max:100'],
+            'email'      => ['required', 'email', 'max:255'],
+            'phone'      => ['required', 'string', 'max:20'],
+            'message'    => ['nullable', 'string', 'max:1000'],
+        ], [
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'last_name.required'  => 'Le nom est obligatoire.',
+            'email.required'      => "L'email est obligatoire.",
+            'email.email'         => "L'adresse email n'est pas valide.",
+            'phone.required'      => 'Le téléphone est obligatoire.',
+        ]);
+
+        $reservation = Reservation::create(array_merge($validated, [
+            'ad_id'  => $ad->id,
+            'status' => 'pending',
+            'token'  => Str::random(32),
+        ]));
+
+        return redirect()->route('ads.reserve.confirmed', [$ad, $reservation]);
+    }
+
+    // ── Page de confirmation de réservation ──────────────────
+
+    public function reservationConfirmed(Ad $ad, Reservation $reservation): View
+    {
+        abort_if($reservation->ad_id !== $ad->id, 404);
+        $ad->load(['vehicle', 'photos']);
+        return view('ads.reserve-confirm', compact('ad', 'reservation'));
     }
 
     // ── Activer / Désactiver une annonce ─────────────────────
