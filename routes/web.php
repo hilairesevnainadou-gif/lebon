@@ -11,6 +11,8 @@ Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->n
 Route::get('/vehicule/favoris',          [AdController::class, 'favorites'])->name('ads.favorites');
 Route::get('/annonces/{ad}/reserver',                           [AdController::class, 'reserve'])->name('ads.reserve');
 Route::get('/annonces/{ad}/reserver/formulaire',                [AdController::class, 'reserveForm'])->name('ads.reserve.form');
+Route::get('/annonces/{ad}/reserver/recap',                     [AdController::class, 'reserveRecap'])->name('ads.reserve.recap');
+Route::get('/annonces/{ad}/reserver/virement',                  [AdController::class, 'reserveVirement'])->name('ads.reserve.virement');
 Route::post('/annonces/{ad}/reserver',                          [AdController::class, 'storeReservation'])->name('ads.reserve.store');
 Route::get('/annonces/{ad}/reservation/{reservation}/confirmee',[AdController::class, 'reservationConfirmed'])->name('ads.reserve.confirmed');
 Route::post('/annonces/{ad}/like',                             [AdController::class, 'toggleLike'])->name('ads.like');

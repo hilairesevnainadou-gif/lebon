@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('email', 255);
             $table->string('phone', 20);
             $table->text('message')->nullable();
+            $table->string('plan', 30)->nullable();
             $table->string('status', 20)->default('pending');
             $table->string('token', 32)->unique();
             $table->timestamps();

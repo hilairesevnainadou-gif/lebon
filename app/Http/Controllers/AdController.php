@@ -338,6 +338,34 @@ class AdController extends Controller
 
     // ── Enregistrement de la réservation ─────────────────────
 
+    private array $reservationPlans = [
+        'sans_garantie'   => ['label' => 'Sans Garantie Panne Mécanique', 'price' => 19.99],
+        'garantie_3mois'  => ['label' => 'Avec Garantie — 3 mois',        'price' => 139],
+        'garantie_6mois'  => ['label' => 'Avec Garantie — 6 mois',        'price' => 259],
+        'garantie_12mois' => ['label' => 'Avec Garantie — 12 mois',       'price' => 399],
+    ];
+
+    public function reserveRecap(Ad $ad): View
+    {
+        $ad->load(['vehicle', 'photos']);
+        $planKey  = request()->query('plan', 'sans_garantie');
+        $planInfo = $this->reservationPlans[$planKey] ?? $this->reservationPlans['sans_garantie'];
+
+        return view('ads.reserve-confirm', compact('ad', 'planInfo', 'planKey'));
+    }
+
+    public function reserveVirement(Ad $ad): View
+    {
+        $ad->load(['vehicle', 'photos', 'seller.defaultBankAccount']);
+        $planKey  = request()->query('plan', 'sans_garantie');
+        $planInfo = $this->reservationPlans[$planKey] ?? $this->reservationPlans['sans_garantie'];
+        $amount      = (float) request()->query('amount', $ad->price ?? 0);
+        $total       = $amount + $planInfo['price'];
+        $bankAccount = $ad->seller?->defaultBankAccount;
+
+        return view('ads.reserve-done', compact('ad', 'planInfo', 'planKey', 'amount', 'total', 'bankAccount'));
+    }
+
     public function storeReservation(Request $request, Ad $ad): RedirectResponse
     {
         $validated = $request->validate([
@@ -346,6 +374,7 @@ class AdController extends Controller
             'email'      => ['required', 'email', 'max:255'],
             'phone'      => ['required', 'string', 'max:20'],
             'message'    => ['nullable', 'string', 'max:1000'],
+            'plan'       => ['nullable', 'string', 'in:sans_garantie,garantie_3mois,garantie_6mois,garantie_12mois'],
         ], [
             'first_name.required' => 'Le prénom est obligatoire.',
             'last_name.required'  => 'Le nom est obligatoire.',
@@ -369,7 +398,7 @@ class AdController extends Controller
     {
         abort_if($reservation->ad_id !== $ad->id, 404);
         $ad->load(['vehicle', 'photos']);
-        return view('ads.reserve-confirm', compact('ad', 'reservation'));
+        return view('ads.reserve-done', compact('ad', 'reservation'));
     }
 
     // ── Activer / Désactiver une annonce ─────────────────────
