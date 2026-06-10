@@ -81,19 +81,7 @@
     }
 
     /* ── Logo Pack Sérénité ── */
-    .pack-logo {
-        display: flex; align-items: center; gap: 8px;
-        padding: 8px 20px 0;
-    }
-    .pack-logo-icon {
-        width: 30px; height: 30px; border-radius: 6px;
-        background: rgb(236, 90, 19);
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-    }
-    .pack-logo-txt { font-size: 26px; font-weight: 800; line-height: 1; }
-    .pack-logo-txt .pack  { color: rgb(60, 60, 60); }
-    .pack-logo-txt .sere  { color: rgb(236, 90, 19); font-style: italic; }
+    .pack-logo { padding: 8px 20px 0; }
 
     /* ── Contenu principal (sur fond blanc, sans carte) ── */
     .main-section {
@@ -233,12 +221,7 @@
 
     {{-- ── Logo Pack Sérénité ── --}}
     <div class="pack-logo">
-        <span class="pack-logo-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
-                <path d="M9 9h6v6H9z"/><path d="M9 4v3M15 17v3M4 15h3M17 9h3"/>
-            </svg>
-        </span>
-        <span class="pack-logo-txt"><span class="pack">Pack&nbsp;</span><span class="sere">Sérénité</span></span>
+        <img src="/RESERVE/pack.avif" alt="Pack Sérénité" style="height:38px;width:auto;object-fit:contain;"/>
     </div>
 
     {{-- ── Section principale ── --}}
