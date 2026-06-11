@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="initial-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=0"/>
+    <meta name="viewport" content="initial-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=0, viewport-fit=cover"/>
+    <meta name="theme-color" content="#ffffff"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
     <title>{{ $ad->title }} — {{ $ad->formatted_price }}</title>
 
      @php
@@ -73,6 +77,10 @@
     }
 
     html { font-size: 62.5%; }
+    html {
+        height: 100%;
+        overflow: hidden;
+    }
     body {
         font-family: var(--font);
         font-size: 1.6rem;
@@ -80,7 +88,10 @@
         color: var(--on-surface);
         max-width: 430px;
         margin: 0 auto;
-        min-height: 100vh;
+        height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
         -webkit-text-size-adjust: 100%;
     }
     a { color: inherit; text-decoration: none; }

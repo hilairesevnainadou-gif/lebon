@@ -13,18 +13,22 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <meta name="theme-color" content="#ffffff"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
     <title>Déposer vos fonds — {{ $ad->title }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { font-size: 16px; }
-    body { font-family: 'Nunito Sans', 'Inter', sans-serif; background: #fff; color: rgb(21,34,51); min-height: 100vh; }
+    html, body { font-size: 16px; height: 100%; overflow: hidden; }
+    body { font-family: 'Nunito Sans', 'Inter', sans-serif; background: #fff; color: rgb(21,34,51); overscroll-behavior: none; }
     a { text-decoration: none; color: inherit; }
     button, input { font-family: inherit; }
 
-    .page { max-width: 430px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: #fff; }
+    .page { position: fixed; inset: 0; max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; background: #fff; overflow: hidden; padding-top: env(safe-area-inset-top); }
 
     /* ── Topbar ── */
     .topbar {
@@ -54,7 +58,7 @@
     .progress-fill { height: 100%; width: 89%; background: rgba(11,28,83,.8); transition: width .3s; }
 
     /* ── Contenu ── */
-    .content { padding: 20px 18px 0; display: flex; flex-direction: column; }
+    .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; padding: 20px 18px 0; display: flex; flex-direction: column; }
 
     /* Hero illustration */
     .hero { padding: 6px 0 18px; }
@@ -175,8 +179,9 @@
 
     /* ── Footer ── */
     .footer {
+        flex-shrink: 0;
         background: rgb(43,52,65); color: #fff;
-        padding: 18px 16px;
+        padding: 18px 16px max(env(safe-area-inset-bottom, 0px), 18px);
         display: flex; align-items: center; justify-content: space-between; gap: 10px;
         font-size: 14px;
     }

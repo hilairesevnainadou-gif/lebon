@@ -2,18 +2,22 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <meta name="theme-color" content="#ffffff"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
     <title>Déposez vos fonds — {{ $ad->title }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { font-size: 16px; }
-    body { font-family: 'Inter', sans-serif; background: #fff; color: rgb(21,34,51); min-height: 100vh; }
+    html, body { font-size: 16px; height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', sans-serif; background: #fff; color: rgb(21,34,51); overscroll-behavior: none; }
     a { text-decoration: none; color: inherit; }
     button, input { font-family: inherit; }
 
-    .page { max-width: 430px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; background: #fff; }
+    .page { position: fixed; inset: 0; max-width: 430px; margin: 0 auto; display: flex; flex-direction: column; background: #fff; overflow: hidden; padding-top: env(safe-area-inset-top); }
 
     /* ── Topbar ── */
     .topbar {
@@ -69,7 +73,7 @@
     .total-line-value { font-size: 13px; font-weight: 600; color: rgb(21,34,51); }
 
     /* ── Contenu ── */
-    .content { padding: 20px 16px 0; display: flex; flex-direction: column; }
+    .content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; padding: 20px 16px max(env(safe-area-inset-bottom, 0px), 24px); display: flex; flex-direction: column; }
 
     .h1 { font-size: 22px; font-weight: 800; color: rgb(21,34,51); line-height: 1.3; margin-bottom: 18px; }
     .h2 { font-size: 15px; font-weight: 800; color: rgb(21,34,51); line-height: 1.4; margin-bottom: 10px; }

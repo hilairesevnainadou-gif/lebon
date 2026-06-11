@@ -2,30 +2,42 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <meta name="theme-color" content="#ffffff"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
     <title>Réserver — {{ $ad->title }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { font-size: 16px; height: 100%; }
+    html, body { font-size: 16px; height: 100%; overflow: hidden; }
     body {
         font-family: 'Inter', sans-serif;
-        background: #fff;                       /* fond blanc comme le visuel */
+        background: #fff;
         color: rgb(21, 34, 51);
-        min-height: 100vh;
+        overscroll-behavior: none;
     }
     a { text-decoration: none; color: inherit; }
     button, input { font-family: inherit; }
 
-    /* ── Page wrapper (mobile-first, max 430px) ── */
+    /* ── Page wrapper — plein écran app ── */
     .page {
+        position: fixed; inset: 0;
         max-width: 430px;
         margin: 0 auto;
-        min-height: 100vh;
         display: flex;
         flex-direction: column;
         background: #fff;
+        overflow: hidden;
+        padding-top: env(safe-area-inset-top);
+    }
+    .scroll-body {
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
     }
 
     /* ── Top bar : flèche à gauche, titre centré avec icône ── */
@@ -179,7 +191,7 @@
     .bonsavoir-txt   { font-size: 13px; color: rgb(15,24,37); line-height: 1.4; }
 
     /* ── CTA ── */
-    .cta-wrap { padding: 20px 20px 36px; display: flex; flex-direction: column; gap: 12px; }
+    .cta-wrap { flex-shrink: 0; padding: 20px 20px max(env(safe-area-inset-bottom, 0px), 24px); display: flex; flex-direction: column; gap: 12px; }
     .cgu-txt { font-size: 12px; color: rgba(21,34,51,0.7); line-height: 1.2; }
     .cgu-txt a { text-decoration: underline; }
     .btn-reserve {
@@ -215,6 +227,7 @@
     {{-- ── Barre de progression ── --}}
     <div class="progress"><div class="progress-fill"></div></div>
 
+    <div class="scroll-body">
     {{-- ── Illustration hero ── --}}
     <div class="hero">
         <img src="/reserve/hero-handshake.svg" alt="" aria-hidden="true"/>
@@ -304,6 +317,8 @@
         <div class="bonsavoir-txt">Une fois la réservation acceptée par le vendeur, le RIB Leboncoin sera accessible via l'étape suivante. Il ne vous sera jamais envoyé par e-mail, SMS, image, capture d'écran, photographie ou lien.</div>
         <div class="bonsavoir-txt">Pour une transaction en toute sécurité et éviter les fraudes, suivez nos recommandations : <u>en savoir plus</u></div>
     </div>
+
+    </div>{{-- /scroll-body --}}
 
     {{-- ── CTA ── --}}
     <div class="cta-wrap">
