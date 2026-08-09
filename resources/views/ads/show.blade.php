@@ -556,10 +556,10 @@
                     <div class="seller-card">
                         <div class="seller-header">
                             <div class="seller-avatar">
-                                {{ strtoupper(substr($ad->seller->first_name ?? 'V', 0, 1)) }}
+                                {{ strtoupper(substr($ad->seller->display_name ?? 'V', 0, 1)) }}
                             </div>
                             <div>
-                                <div class="seller-name">{{ $ad->seller->full_name }}</div>
+                                <div class="seller-name">{{ $ad->seller->display_name }}</div>
                                 <div class="seller-city">{{ $ad->seller->city }}</div>
                             </div>
                         </div>

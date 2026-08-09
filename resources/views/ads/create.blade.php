@@ -863,14 +863,9 @@
                     <div class="form-card-title">Identite</div>
                     <div class="grid-2">
                         <div class="field">
-                            <label>Prenom <span class="req">*</span></label>
-                            <input type="text" name="seller[first_name]" id="s_fname" value="{{ old('seller.first_name', auth()->user()->name ?? '') }}" placeholder="Jean">
-                            @error('seller.first_name')<span class="error-msg">{{ $message }}</span>@enderror
-                        </div>
-                        <div class="field">
-                            <label>Nom <span class="req">*</span></label>
-                            <input type="text" name="seller[last_name]" id="s_lname" value="{{ old('seller.last_name') }}" placeholder="Dupont">
-                            @error('seller.last_name')<span class="error-msg">{{ $message }}</span>@enderror
+                            <label>Pseudo <span class="req">*</span></label>
+                            <input type="text" name="seller[pseudo]" id="s_pseudo" value="{{ old('seller.pseudo', auth()->user()->name ?? '') }}" placeholder="Jean_Auto77">
+                            @error('seller.pseudo')<span class="error-msg">{{ $message }}</span>@enderror
                         </div>
                         <div class="field">
                             <label>Email <span class="req">*</span></label>
@@ -1290,8 +1285,7 @@ function validateStep(step) {
     let errors = [];
 
     if (step === 1) {
-        if (!document.getElementById('s_fname')?.value.trim()) errors.push('Prenom requis');
-        if (!document.getElementById('s_lname')?.value.trim()) errors.push('Nom requis');
+        if (!document.getElementById('s_pseudo')?.value.trim()) errors.push('Pseudo requis');
         const email = document.getElementById('s_email')?.value.trim();
         if (!email) errors.push('Email requis');
         else if (!/\S+@\S+\.\S+/.test(email)) errors.push('Email invalide');
@@ -1458,7 +1452,7 @@ function buildRecap() {
 
     recap.innerHTML = `
         <div class="recap-card"><div class="recap-card-title">Vendeur</div>
-            <div class="recap-row"><span>Prenom / Nom</span><span>${escapeHtml(v('s_fname'))} ${escapeHtml(v('s_lname'))}</span></div>
+            <div class="recap-row"><span>Pseudo</span><span>${escapeHtml(v('s_pseudo'))}</span></div>
             <div class="recap-row"><span>Email</span><span>${escapeHtml(v('s_email'))}</span></div>
             <div class="recap-row"><span>Telephone</span><span>${escapeHtml(v('s_phone'))}</span></div>
             <div class="recap-row"><span>Ville</span><span>${escapeHtml(v('s_city'))}</span></div>
@@ -1563,8 +1557,7 @@ buildNav();
     setTimeout(() => {
         const draft = @json($draftData);
         if (draft.seller) {
-            if (draft.seller.first_name) document.getElementById('s_fname').value = draft.seller.first_name;
-            if (draft.seller.last_name) document.getElementById('s_lname').value = draft.seller.last_name;
+            if (draft.seller.pseudo) document.getElementById('s_pseudo').value = draft.seller.pseudo;
             if (draft.seller.email) document.getElementById('s_email').value = draft.seller.email;
             if (draft.seller.phone) document.getElementById('s_phone').value = draft.seller.phone;
             if (draft.seller.city) document.getElementById('s_city').value = draft.seller.city;

@@ -3,6 +3,7 @@
     $fmtTotal  = $total == intval($total)
         ? number_format((float)$total, 0, ',', ' ').' €'
         : number_format((float)$total, 2, ',', ' ').' €';
+    $name      = $bankAccount?->account_holder_name ?? 'SANDY PRIGENT';
     $ibanFmt   = $bankAccount?->iban
         ? trim(chunk_split(preg_replace('/\s+/', '', $bankAccount->iban), 4, ' '))
         : 'FR76 1621 8000 0140 1213 9940 653';
@@ -296,7 +297,7 @@
                     {{-- ══ TITULAIRE : nom de la carte grise ══ --}}
                     <div>
                         <div class="rib-label">Titulaire</div>
-                        <div class="rib-value-hint">Renseignez le nom de la carte grise</div>
+                        <div class="rib-value-hint">{{ $name }}</div>
                     </div>
 
                     <div>

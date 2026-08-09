@@ -732,17 +732,17 @@
     <div class="seller-top">
         <div class="seller-ava">
             @if(isset($ad->seller->profile_picture_url) && $ad->seller->profile_picture_url)
-                <img src="{{ $ad->seller->profile_picture_url }}" alt="{{ $ad->seller->full_name ?? '' }}"/>
+                <img src="{{ $ad->seller->profile_picture_url }}" alt="{{ $ad->seller->display_name ?? '' }}"/>
             @else
                 <span class="seller-ava-initial">
-                    {{ mb_strtoupper(mb_substr($ad->seller->first_name ?? $ad->seller->full_name ?? 'V', 0, 1)) }}
+                    {{ mb_strtoupper(mb_substr($ad->seller->display_name ?? 'V', 0, 1)) }}
                 </span>
             @endif
         </div>
         <button class="btn-follow" type="button" aria-label="Suivre l'actualité de ce vendeur">Suivre</button>
     </div>
 
-    <span class="seller-name">{{ $ad->seller->full_name ?? 'younes687' }}</span>
+    <span class="seller-name">{{ $ad->seller->display_name ?? 'younes687' }}</span>
 
     <ul class="seller-info-list">
         <li class="seller-info-item">

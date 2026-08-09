@@ -117,10 +117,9 @@ class AdController extends Controller
             $seller = Seller::updateOrCreate(
                 ['user_id' => $user->id, 'email' => $sellerData['email']],
                 [
-                    'first_name' => $sellerData['first_name'],
-                    'last_name'  => $sellerData['last_name'],
-                    'phone'      => $sellerData['phone'],
-                    'city'       => $sellerData['city'],
+                    'pseudo' => $sellerData['pseudo'],
+                    'phone'  => $sellerData['phone'],
+                    'city'   => $sellerData['city'],
                 ]
             );
 

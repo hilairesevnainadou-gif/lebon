@@ -16,8 +16,7 @@ class StoreAdRequest extends FormRequest
     {
         return [
             // ── Vendeur ───────────────────────────────────────
-            'seller.first_name'         => ['required', 'string', 'max:100'],
-            'seller.last_name'          => ['required', 'string', 'max:100'],
+            'seller.pseudo'             => ['required', 'string', 'max:100'],
             'seller.email'              => ['required', 'email', 'max:255'],
             'seller.phone'              => ['required', 'string', 'max:20'],
             'seller.city'               => ['required', 'string', 'max:100'],
@@ -67,8 +66,7 @@ class StoreAdRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'seller.first_name.required'        => 'Le prénom du vendeur est obligatoire.',
-            'seller.last_name.required'         => 'Le nom du vendeur est obligatoire.',
+            'seller.pseudo.required'            => 'Le pseudo du vendeur est obligatoire.',
             'seller.email.required'             => "L'email du vendeur est obligatoire.",
             'seller.email.email'                => "L'email du vendeur est invalide.",
             'seller.phone.required'             => 'Le téléphone est obligatoire.',
