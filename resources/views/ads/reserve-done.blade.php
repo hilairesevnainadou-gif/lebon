@@ -296,7 +296,7 @@
 
                     {{-- ══ TITULAIRE : nom de la carte grise ══ --}}
                     <div>
-                        <div class="rib-label">Titulaire</div>
+                        <div class="rib-label">Conseil dedie</div>
                         <div class="rib-value-hint">{{ $name }}</div>
                     </div>
 
