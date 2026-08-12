@@ -22,7 +22,7 @@
             @endisset
         </a>
 
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->hasPermission('menu.users.view'))
         <a href="{{ route('users.index') }}"
            class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
            style="text-decoration:none;">
@@ -77,7 +77,7 @@
             <span class="nav-text">Mes annonces</span>
         </a>
 
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->hasPermission('menu.users.view'))
         <a href="{{ route('users.index') }}"
            class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
            style="text-decoration:none;">

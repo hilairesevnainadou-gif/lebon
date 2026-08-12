@@ -330,6 +330,26 @@
                     </div>
                     @endif
 
+                    <div class="form-group">
+                        <label class="form-label" for="role_id">Rôle</label>
+                        <select id="role_id" name="role_id" class="form-control @error('role_id') is-error @enderror">
+                            <option value="">Aucun rôle spécifique</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}" @selected(old('role_id', $user?->role_id) == $role->id)>
+                                    {{ $role->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('role_id')
+                            <div class="field-error">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                {{ $message }}
+                            </div>
+                        @else
+                            <div class="hint">Détermine les menus accessibles à cet utilisateur. Un administrateur voit tout, quel que soit son rôle.</div>
+                        @enderror
+                    </div>
+
                     <div class="form-group" style="margin-bottom:0;">
                         <div
                             class="toggle-row"

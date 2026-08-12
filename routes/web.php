@@ -28,6 +28,11 @@ Route::middleware('guest')->group(function () {
     Route::get('/a3f7k',  [AuthController::class, 'showLogin'])->name('login');
     Route::post('/a3f7k', [AuthController::class, 'login'])->name('login.post');
 
+    // Vérification OTP après mot de passe valide
+    Route::get('/f2h6y',            [AuthController::class, 'showOtp'])->name('otp.show');
+    Route::post('/f2h6y',           [AuthController::class, 'verifyOtp'])->name('otp.verify');
+    Route::post('/f2h6y/renvoyer',  [AuthController::class, 'resendOtp'])->name('otp.resend');
+
     // Mot de passe oublié
     Route::get('/c4x8p',         [ForgotPasswordController::class, 'showForgotForm'])->name('password.request');
     Route::post('/c4x8p',        [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
