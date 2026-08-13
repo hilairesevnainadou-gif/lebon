@@ -2,11 +2,24 @@
 
 namespace App\Models;
 
-use App\Models\Ad;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int         $id
+ * @property int         $ad_id
+ * @property string      $disk
+ * @property string      $path
+ * @property string      $original_name
+ * @property string|null $mime_type
+ * @property int|null    $size
+ * @property int         $order
+ *
+ * @property-read string $url
+ * @property-read string $formatted_size
+ */
 class AdPhoto extends Model
 {
     use HasFactory;
@@ -21,34 +34,83 @@ class AdPhoto extends Model
         'order',
     ];
 
-    public function ad()
+    protected $casts = [
+        'order' => 'integer',
+        'size'  => 'integer',
+    ];
+
+    // ── Relations ────────────────────────────────────────────
+
+    public function ad(): BelongsTo
     {
         return $this->belongsTo(Ad::class);
     }
 
+    // ── Accessors ─────────────────────────────────────────────
+
     /**
-     * Supprime le fichier physique
+     * URL publique complète de la photo.
+     * Utilisable dans les vues : $photo->url
+     *
+     * @return string
+     */
+    public function getUrlAttribute(): string
+    {
+        return Storage::disk($this->disk)->url($this->path);
+    }
+
+    /**
+     * Taille lisible : "2.4 Mo", "340 Ko"
+     *
+     * @return string
+     */
+    public function getFormattedSizeAttribute(): string
+    {
+        if (!$this->size) {
+            return '—';
+        }
+
+        $units = ['o', 'Ko', 'Mo', 'Go'];
+        $i     = (int) floor(log($this->size, 1024));
+
+        return round($this->size / pow(1024, $i), 1) . ' ' . $units[$i];
+    }
+
+    // ── Helpers ───────────────────────────────────────────────
+
+    /**
+     * Supprime le fichier physique ET l'enregistrement en base.
      */
     public function deleteWithFile(): bool
     {
-        if ($this->path) {
-            Storage::disk($this->disk ?? 'public')->delete($this->path);
-        }
+        Storage::disk($this->disk)->delete($this->path);
+
         return $this->delete();
     }
 
     /**
-     * Supprime tous les fichiers d'une annonce
+     * Réordonne les photos à partir d'un tableau d'IDs ordonnés.
+     *
+     * @param  array<int> $orderedIds
+     */
+    public static function reorder(array $orderedIds): void
+    {
+        foreach ($orderedIds as $position => $id) {
+            static::where('id', $id)->update(['order' => $position]);
+        }
+    }
+
+    /**
+     * Supprime tous les fichiers physiques + enregistrements d'une annonce.
      */
     public static function deleteAllForAd(int $adId): void
     {
-        $photos = self::where('ad_id', $adId)->get();
+        $photos = static::where('ad_id', $adId)->get();
 
         foreach ($photos as $photo) {
-            if ($photo->path) {
-                Storage::disk($photo->disk ?? 'public')->delete($photo->path);
-            }
-            $photo->delete();
+            Storage::disk($photo->disk)->delete($photo->path);
         }
+
+        static::where('ad_id', $adId)->delete();
     }
 }
