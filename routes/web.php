@@ -4,6 +4,7 @@ use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\PcAdController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,8 +62,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/d6t1z/{ad}/partager',             [AdController::class, 'share'])->name('ads.share');
     Route::patch('/d6t1z/{ad}/statut',             [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
 
+    // Espace annonces PC (nécessite la permission menu.pc.view)
+    Route::get('/d6t1z/pc',           [PcAdController::class, 'index'])->name('pc.index');
+    Route::get('/d6t1z/pc/creer',     [PcAdController::class, 'create'])->name('pc.create');
+    Route::post('/d6t1z/pc',          [PcAdController::class, 'store'])->name('pc.store');
+    Route::get('/d6t1z/pc/{ad}',      [PcAdController::class, 'show'])->name('pc.show');
+
     // Gestion des utilisateurs (admin uniquement)
     Route::middleware('admin')->group(function () {
+        Route::get('/e5w9n/annonces',       [AdController::class, 'adminAll'])->name('admin.ads.index');
         Route::get('/e5w9n',                [UserController::class, 'index'])->name('users.index');
         Route::get('/e5w9n/creer',          [UserController::class, 'create'])->name('users.create');
         Route::post('/e5w9n',               [UserController::class, 'store'])->name('users.store');

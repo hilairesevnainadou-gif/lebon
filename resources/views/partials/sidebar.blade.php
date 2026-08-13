@@ -22,6 +22,33 @@
             @endisset
         </a>
 
+        @if(auth()->user()->hasPermission('menu.pc.view'))
+        <a href="{{ route('pc.index') }}"
+           class="nav-item {{ request()->routeIs('pc.*') ? 'active' : '' }}"
+           style="text-decoration:none;">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <span class="nav-text">Annonces PC</span>
+        </a>
+        @endif
+
+        @if(auth()->user()->isAdmin())
+        <a href="{{ route('admin.ads.index') }}"
+           class="nav-item {{ request()->routeIs('admin.ads.*') ? 'active' : '' }}"
+           style="text-decoration:none;">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span class="nav-text">Toutes les annonces</span>
+        </a>
+        @endif
+
         @if(auth()->user()->hasPermission('menu.users.view'))
         <a href="{{ route('users.index') }}"
            class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
@@ -76,6 +103,19 @@
             </svg>
             <span class="nav-text">Mes annonces</span>
         </a>
+
+        @if(auth()->user()->hasPermission('menu.pc.view'))
+        <a href="{{ route('pc.index') }}"
+           class="nav-item {{ request()->routeIs('pc.*') ? 'active' : '' }}"
+           style="text-decoration:none;">
+            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            <span class="nav-text">Annonces PC</span>
+        </a>
+        @endif
 
         @if(auth()->user()->hasPermission('menu.users.view'))
         <a href="{{ route('users.index') }}"

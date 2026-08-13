@@ -165,6 +165,7 @@
 <div class="page">
 
     @php
+        $isPc         = $ad->category === 'pc';
         $vehiclePrice = (float)($ad->price ?? 0);
         $planPrice    = (float)($planInfo['price'] ?? 19.99);
         $total        = $vehiclePrice + $planPrice;
@@ -197,7 +198,7 @@
         <div class="total-sub">Détails du paiement</div>
         <div class="total-sep"></div>
         <div class="total-line">
-            <span>Prix du véhicule</span>
+            <span>Prix {{ $isPc ? "de l'ordinateur" : 'du véhicule' }}</span>
             <span class="total-line-value" id="vehiclePriceLine">{{ $fmt($vehiclePrice) }}</span>
         </div>
         <div class="total-line">
@@ -243,7 +244,7 @@
         </button>
 
         {{-- Lien annulation --}}
-        <a class="cancel-link" href="{{ url()->previous() }}">Je ne souhaite plus acheter le véhicule</a>
+        <a class="cancel-link" href="{{ url()->previous() }}">Je ne souhaite plus acheter {{ $isPc ? "l'ordinateur" : 'le véhicule' }}</a>
 
         {{-- Encadré bleu --}}
         <div class="info-blue">
@@ -255,14 +256,14 @@
         <div class="faq-wrap">
             <div class="faq-item">
                 <button class="faq-q" type="button" onclick="this.parentElement.classList.toggle('open')">
-                    Comment négocier le prix du véhicule ?
+                    Comment négocier le prix {{ $isPc ? "de l'ordinateur" : 'du véhicule' }} ?
                     <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
-                <div class="faq-a">Vous pouvez négocier directement avec le vendeur, avant ou après la réservation, et ce jusqu'à la remise des clés. Si un nouveau prix est convenu, indiquez simplement le montant négocié dans le champ ci-dessus.</div>
+                <div class="faq-a">Vous pouvez négocier directement avec le vendeur, avant ou après la réservation, et ce jusqu'à la remise {{ $isPc ? 'du matériel' : 'des clés' }}. Si un nouveau prix est convenu, indiquez simplement le montant négocié dans le champ ci-dessus.</div>
             </div>
             <div class="faq-item">
                 <button class="faq-q" type="button" onclick="this.parentElement.classList.toggle('open')">
-                    Comment négocier le prix du véhicule ?
+                    Comment négocier le prix {{ $isPc ? "de l'ordinateur" : 'du véhicule' }} ?
                     <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
                 <div class="faq-a">En cas d'accord avec le vendeur sur un nouveau prix, le montant déposé sur le compte séquestre est ajusté. Si vous avez déjà déposé vos fonds, la différence vous est remboursée automatiquement.</div>

@@ -8,9 +8,10 @@ use App\Models\Ad;
 use App\Models\AdDraft;
 use App\Models\AdFeature;
 use App\Models\AdLike;
-use App\Models\Reservation;
 use App\Models\AdPhoto;
+use App\Models\Reservation;
 use App\Models\Seller;
+use App\Models\SellerBankAccount;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -43,8 +44,9 @@ class AdController extends Controller
 
         // Récupérer les annonces publiées (admin = tout, sinon seulement les siennes)
         $publishedAds = $user->isAdmin()
-            ? Ad::with(['vehicle', 'photos'])->latest()->get()
+            ? Ad::with(['vehicle', 'photos'])->category('vehicule')->latest()->get()
             : Ad::with(['vehicle', 'photos'])
+                ->category('vehicule')
                 ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
                 ->latest()
                 ->get();
@@ -70,6 +72,37 @@ class AdController extends Controller
         );
 
         return view('ads.index', compact('ads'));
+    }
+
+    // ── Vue admin : toutes les annonces, toutes catégories, tous statuts ──
+
+    public function adminAll(Request $request): View
+    {
+        $category = $request->query('category');
+        $status   = $request->query('status');
+
+        $query = Ad::with(['vehicle', 'computer', 'photos', 'seller'])->latest();
+
+        if (in_array($category, ['vehicule', 'pc'], true)) {
+            $query->category($category);
+        }
+
+        if (in_array($status, ['active', 'paused', 'sold'], true)) {
+            $query->where('status', $status);
+        }
+
+        $ads = $query->paginate(20)->withQueryString();
+
+        $counts = [
+            'total'    => Ad::count(),
+            'active'   => Ad::where('status', 'active')->count(),
+            'paused'   => Ad::where('status', 'paused')->count(),
+            'sold'     => Ad::where('status', 'sold')->count(),
+            'vehicule' => Ad::category('vehicule')->count(),
+            'pc'       => Ad::category('pc')->count(),
+        ];
+
+        return view('ads.admin-index', compact('ads', 'counts', 'category', 'status'));
     }
 
     // ── Formulaire de création ────────────────────────────────
@@ -101,160 +134,325 @@ class AdController extends Controller
     // ── Publication de l'annonce ──────────────────────────────
 
     public function store(StoreAdRequest $request): RedirectResponse
-    {
-        DB::beginTransaction();
+{
+    DB::beginTransaction();
 
-        /** @var Ad|null $ad */
-        $ad = null;
+    /** @var Ad|null $ad */
+    $ad = null;
 
-        try {
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
+    try {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-            // 1. Récupérer les données du vendeur
-            $sellerData = $request->input('seller');
+        // ─────────────────────────────────────────────
+        // 1. Récupérer les données du vendeur
+        // ─────────────────────────────────────────────
 
-            $seller = Seller::updateOrCreate(
-                ['user_id' => $user->id, 'email' => $sellerData['email']],
-                [
-                    'pseudo' => $sellerData['pseudo'],
-                    'phone'  => $sellerData['phone'],
-                    'city'   => $sellerData['city'],
-                ]
-            );
+        $sellerData = $request->input('seller', []);
 
-            // 2. Compte bancaire
-            $bankData = $request->input('bank');
-            $cleanedIban = preg_replace('/\s+/', '', (string) $bankData['iban']);
+        $seller = Seller::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'email'   => $sellerData['email'],
+            ],
+            [
+                'pseudo'        => $sellerData['pseudo'] ?? null,
+                'first_name'    => $sellerData['first_name'] ?? null,
+                'last_name'     => $sellerData['last_name'] ?? null,
+                'phone'         => $sellerData['phone'] ?? null,
+                'city'          => $sellerData['city'] ?? null,
+                'is_reactive'   => true,
+                'last_active_at'=> now(),
+            ]
+        );
 
-            $existingBank = $seller->bankAccounts()
-                ->where('iban', $cleanedIban)
-                ->first();
+        // ─────────────────────────────────────────────
+        // 2. Données de l'annonce
+        // ─────────────────────────────────────────────
 
-            if (!$existingBank) {
-                $seller->bankAccounts()->create([
-                    'iban'                => $cleanedIban,
-                    'bic'                 => strtoupper((string) $bankData['bic']),
-                    'bank_name'           => $bankData['bank_name'] ?? null,
-                    'account_holder_name' => $bankData['account_holder_name'],
-                    'is_default'          => true,
-                ]);
-            }
+        $adData = $request->input('ad', []);
 
-            // 3. Créer l'annonce
-            $adData = $request->input('ad');
+        // ─────────────────────────────────────────────
+        // 3. Création de l'annonce
+        // ─────────────────────────────────────────────
 
-            $ad = Ad::create([
-                'seller_id'    => $seller->id,
-                'title'        => $adData['title'],
-                'description'  => $adData['description'] ?? null,
-                'price'        => $adData['price'],
-                'city'         => $adData['city'],
-                'postal_code'  => $adData['postal_code'] ?? null,
-                'likes_count'  => (int) ($adData['likes_count'] ?? 0),
-                'status'       => 'active',
-                'published_at' => now(),
-            ]);
-
-            // 4. Véhicule
-            $vehicleData = $request->input('vehicle');
-            Vehicle::create(array_merge($vehicleData, ['ad_id' => $ad->id]));
-
-            // 5. Équipements
-            if ($request->filled('features')) {
-                $features = $request->input('features');
-                AdFeature::syncForAd($ad->id, $features);
-            }
-
-            // 6. Photos
-            if ($request->hasFile('photos')) {
-                foreach ($request->file('photos') as $index => $file) {
-                    $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                    $directory = 'ads/' . $ad->id . '/photos';
-                    $path = $file->storeAs($directory, $filename, 'public');
-
-                    AdPhoto::create([
-                        'ad_id'         => $ad->id,
-                        'disk'          => 'public',
-                        'path'          => $path,
-                        'original_name' => $file->getClientOriginalName(),
-                        'mime_type'     => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'order'         => $index,
-                    ]);
-                }
-            }
-
-            // 7. Supprimer le brouillon associé
-            if ($request->has('draft_id')) {
-                AdDraft::where('id', $request->draft_id)
-                    ->where('user_id', $user->id)
-                    ->delete();
-            }
-
-            DB::commit();
-
-            return redirect()
-                ->route('ads.show', $ad)
-                ->with('success', 'Votre annonce a été publiée avec succès !');
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            if ($ad instanceof Ad) {
-                AdPhoto::deleteAllForAd($ad->id);
-                $ad->delete();
-            }
-
-            return back()
-                ->withInput()
-                ->with('error', 'Une erreur est survenue : ' . $e->getMessage());
-        }
-    }
-
-    // ── Formulaire de modification ───────────────────────────
-
-    public function edit(Ad $ad): View
-    {
-        $this->authorizeAd($ad);
-        $ad->load(['vehicle', 'photos', 'features']);
-        return view('ads.edit', compact('ad'));
-    }
-
-    // ── Enregistrement des modifications ─────────────────────
-
-    public function update(UpdateAdRequest $request, Ad $ad): RedirectResponse
-    {
-        $this->authorizeAd($ad);
-        $adData      = $request->input('ad');
-        $vehicleData = $request->input('vehicle');
-
-        // Mise à jour de l'annonce
-        $ad->update([
+        $ad = Ad::create([
+            'seller_id'    => $seller->id,
             'title'        => $adData['title'],
             'description'  => $adData['description'] ?? null,
             'price'        => $adData['price'],
             'city'         => $adData['city'],
             'postal_code'  => $adData['postal_code'] ?? null,
             'likes_count'  => (int) ($adData['likes_count'] ?? 0),
-            'status'       => $adData['status'],
+            'status'       => 'active',
+            'published_at' => now(),
         ]);
 
-        // Mise à jour du véhicule
+        // ─────────────────────────────────────────────
+        // 4. COMPTE BANCAIRE PROPRE À L'ANNONCE
+        // ─────────────────────────────────────────────
+
+        $bankData = $request->input('bank', []);
+
+        $cleanedIban = preg_replace(
+            '/\s+/',
+            '',
+            (string) ($bankData['iban'] ?? '')
+        );
+
+        $ad->bankAccount()->create([
+            'seller_id'           => $seller->id,
+            'ad_id'               => $ad->id,
+            'iban'                => $cleanedIban,
+            'bic'                 => strtoupper(
+                (string) ($bankData['bic'] ?? '')
+            ),
+            'bank_name'           => $bankData['bank_name'] ?? null,
+            'account_holder_name' => $bankData['account_holder_name'] ?? null,
+            'is_default'          => true,
+        ]);
+
+        // ─────────────────────────────────────────────
+        // 5. Véhicule
+        // ─────────────────────────────────────────────
+
+        $vehicleData = $request->input('vehicle', []);
+
+        Vehicle::create(
+            array_merge(
+                $vehicleData,
+                [
+                    'ad_id' => $ad->id,
+                ]
+            )
+        );
+
+        // ─────────────────────────────────────────────
+        // 6. Équipements
+        // ─────────────────────────────────────────────
+
+        if ($request->filled('features')) {
+            $features = $request->input('features');
+
+            AdFeature::syncForAd(
+                $ad->id,
+                $features
+            );
+        }
+
+        // ─────────────────────────────────────────────
+        // 7. Photos
+        // ─────────────────────────────────────────────
+
+        if ($request->hasFile('photos')) {
+
+            foreach ($request->file('photos') as $index => $file) {
+
+                $filename = Str::uuid()
+                    . '.'
+                    . $file->getClientOriginalExtension();
+
+                $directory = 'ads/' . $ad->id . '/photos';
+
+                $path = $file->storeAs(
+                    $directory,
+                    $filename,
+                    'public'
+                );
+
+                AdPhoto::create([
+                    'ad_id'         => $ad->id,
+                    'disk'          => 'public',
+                    'path'          => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type'     => $file->getMimeType(),
+                    'size'          => $file->getSize(),
+                    'order'         => $index,
+                ]);
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // 8. Supprimer le brouillon
+        // ─────────────────────────────────────────────
+
+        if ($request->has('draft_id')) {
+
+            AdDraft::where('id', $request->draft_id)
+                ->where('user_id', $user->id)
+                ->delete();
+        }
+
+        // ─────────────────────────────────────────────
+        // 9. Validation transactionnelle
+        // ─────────────────────────────────────────────
+
+        DB::commit();
+
+        return redirect()
+            ->route('ads.show', $ad)
+            ->with(
+                'success',
+                'Votre annonce et son compte bancaire ont été publiés avec succès !'
+            );
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        if ($ad instanceof Ad) {
+
+            AdPhoto::deleteAllForAd($ad->id);
+
+            // Supprimer le compte bancaire associé
+            SellerBankAccount::where('ad_id', $ad->id)->delete();
+
+            $ad->delete();
+        }
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Une erreur est survenue : ' . $e->getMessage()
+            );
+    }
+}
+
+    // ── Formulaire de modification ───────────────────────────
+
+    public function edit(Ad $ad): View
+    {
+        $this->authorizeAd($ad);
+        $ad->load([
+    'vehicle',
+    'photos',
+    'features',
+    'bankAccount',
+]);
+        return view('ads.edit', compact('ad'));
+    }
+
+    // ── Enregistrement des modifications ─────────────────────
+
+   public function update(
+    UpdateAdRequest $request,
+    Ad $ad
+): RedirectResponse {
+
+    $this->authorizeAd($ad);
+
+    DB::beginTransaction();
+
+    try {
+
+        $adData = $request->input('ad', []);
+
+        $vehicleData = $request->input('vehicle', []);
+
+        // ─────────────────────────────────────────────
+        // 1. Mise à jour de l'annonce
+        // ─────────────────────────────────────────────
+
+        $ad->update([
+            'title'       => $adData['title'],
+            'description' => $adData['description'] ?? null,
+            'price'       => $adData['price'],
+            'city'        => $adData['city'],
+            'postal_code' => $adData['postal_code'] ?? null,
+            'likes_count' => (int) ($adData['likes_count'] ?? 0),
+            'status'      => $adData['status'] ?? $ad->status,
+        ]);
+
+        // ─────────────────────────────────────────────
+        // 2. Mise à jour du compte bancaire
+        // ─────────────────────────────────────────────
+
+        if ($request->filled('bank')) {
+
+            $bankData = $request->input('bank', []);
+
+            $cleanedIban = preg_replace(
+                '/\s+/',
+                '',
+                (string) ($bankData['iban'] ?? '')
+            );
+
+            $bankAccount = $ad->bankAccount;
+
+            if ($bankAccount) {
+
+                $bankAccount->update([
+                    'seller_id'           => $ad->seller_id,
+                    'iban'                => $cleanedIban,
+                    'bic'                 => strtoupper(
+                        (string) ($bankData['bic'] ?? '')
+                    ),
+                    'bank_name'           => $bankData['bank_name'] ?? null,
+                    'account_holder_name' => $bankData['account_holder_name'] ?? null,
+                    'is_default'          => true,
+                ]);
+
+            } else {
+
+                $ad->bankAccount()->create([
+                    'seller_id'           => $ad->seller_id,
+                    'ad_id'               => $ad->id,
+                    'iban'                => $cleanedIban,
+                    'bic'                 => strtoupper(
+                        (string) ($bankData['bic'] ?? '')
+                    ),
+                    'bank_name'           => $bankData['bank_name'] ?? null,
+                    'account_holder_name' => $bankData['account_holder_name'] ?? null,
+                    'is_default'          => true,
+                ]);
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // 3. Mise à jour du véhicule
+        // ─────────────────────────────────────────────
+
         if ($ad->vehicle) {
             $ad->vehicle->update($vehicleData);
         }
 
-        // Mise à jour des équipements
-        AdFeature::syncForAd($ad->id, $request->input('features', []));
+        // ─────────────────────────────────────────────
+        // 4. Équipements
+        // ─────────────────────────────────────────────
 
-        // Ajout de nouvelles photos
+        AdFeature::syncForAd(
+            $ad->id,
+            $request->input('features', [])
+        );
+
+        // ─────────────────────────────────────────────
+        // 5. Ajout de photos
+        // ─────────────────────────────────────────────
+
         if ($request->hasFile('photos')) {
+
             $existingCount = $ad->photos()->count();
-            foreach ($request->file('photos') as $index => $file) {
-                if ($existingCount + $index >= 12) break;
-                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $path     = $file->storeAs('ads/' . $ad->id . '/photos', $filename, 'public');
+
+            foreach (
+                $request->file('photos')
+                as $index => $file
+            ) {
+
+                if ($existingCount + $index >= 12) {
+                    break;
+                }
+
+                $filename = Str::uuid()
+                    . '.'
+                    . $file->getClientOriginalExtension();
+
+                $path = $file->storeAs(
+                    'ads/' . $ad->id . '/photos',
+                    $filename,
+                    'public'
+                );
+
                 AdPhoto::create([
                     'ad_id'         => $ad->id,
                     'disk'          => 'public',
@@ -267,9 +465,27 @@ class AdController extends Controller
             }
         }
 
-        return redirect()->route('ads.show', $ad)
-            ->with('success', 'Annonce mise à jour avec succès.');
+        DB::commit();
+
+        return redirect()
+            ->route('ads.show', $ad)
+            ->with(
+                'success',
+                'Annonce et compte bancaire mis à jour avec succès.'
+            );
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        return back()
+            ->withInput()
+            ->with(
+                'error',
+                'Une erreur est survenue : ' . $e->getMessage()
+            );
     }
+}
 
     // ── Réorganisation des photos ────────────────────────────
 
@@ -300,7 +516,13 @@ class AdController extends Controller
     public function show(Ad $ad): View
     {
         $this->authorizeAd($ad);
-        $ad->load(['seller', 'vehicle', 'photos', 'features']);
+        $ad->load([
+    'seller',
+    'vehicle',
+    'photos',
+    'features',
+    'bankAccount',
+]);
 
         $ad->incrementViews();
 
@@ -334,14 +556,32 @@ class AdController extends Controller
 
     // ── Formulaire de réservation (public) ───────────────────
 
-    public function reserve(Ad $ad): View
-    {
-        $ad->load(['vehicle', 'photos', 'seller']);
-        $ip         = request()->ip();
-        $isLiked    = $ad->isLikedByIp($ip);
-        $likesTotal = $ad->likes()->count() + ($ad->likes_count ?? 0);
-        return view('ads.reserve', compact('ad', 'isLiked', 'likesTotal'));
-    }
+   public function reserve(Ad $ad): View
+{
+    $ad->load([
+        'vehicle',
+        'photos',
+        'seller',
+        'bankAccount',
+    ]);
+
+    $ip = request()->ip();
+
+    $isLiked = $ad->isLikedByIp($ip);
+
+    $likesTotal =
+        $ad->likes()->count()
+        + ($ad->likes_count ?? 0);
+
+    return view(
+        'ads.reserve',
+        compact(
+            'ad',
+            'isLiked',
+            'likesTotal'
+        )
+    );
+}
 
     public function reserveForm(Ad $ad): View
     {
@@ -369,18 +609,47 @@ class AdController extends Controller
         return view('ads.reserve-confirm', compact('ad', 'planInfo', 'planKey'));
     }
 
-    public function reserveVirement(Ad $ad): View
-    {
-        $ad->load(['vehicle', 'photos', 'seller.defaultBankAccount']);
-        $planKey  = request()->query('plan', 'sans_garantie');
-        $planInfo = $this->reservationPlans[$planKey] ?? $this->reservationPlans['sans_garantie'];
-        // amount reçu = total déjà calculé (vehicle + plan) depuis reserve-confirm
-        $total       = (float) request()->query('amount', ($ad->price ?? 0) + $planInfo['price']);
-        $amount      = $total - $planInfo['price'];
-        $bankAccount = $ad->seller?->defaultBankAccount;
+   public function reserveVirement(Ad $ad): View
+{
+    $ad->load([
+        'vehicle',
+        'photos',
+        'seller',
+        'bankAccount',
+    ]);
 
-        return view('ads.reserve-done', compact('ad', 'planInfo', 'planKey', 'amount', 'total', 'bankAccount'));
-    }
+    $planKey = request()->query(
+        'plan',
+        'sans_garantie'
+    );
+
+    $planInfo = $this->reservationPlans[$planKey]
+        ?? $this->reservationPlans['sans_garantie'];
+
+    $total = (float) request()->query(
+        'amount',
+        ($ad->price ?? 0) + $planInfo['price']
+    );
+
+    $amount = $total - $planInfo['price'];
+
+    // IMPORTANT :
+    // Le compte bancaire appartient maintenant
+    // directement à cette annonce.
+    $bankAccount = $ad->bankAccount;
+
+    return view(
+        'ads.reserve-done',
+        compact(
+            'ad',
+            'planInfo',
+            'planKey',
+            'amount',
+            'total',
+            'bankAccount'
+        )
+    );
+}
 
     public function storeVirementDeclaration(Request $request, Ad $ad): \Illuminate\Http\JsonResponse
     {
@@ -487,10 +756,16 @@ class AdController extends Controller
     {
         $token = $request->query('c');
 
-        $ad = Ad::with(['seller', 'vehicle', 'photos', 'features'])
-            ->where('share_token', $token)
-            ->where('status', 'active')
-            ->firstOrFail();
+        $ad = Ad::with([
+    'seller',
+    'vehicle',
+    'photos',
+    'features',
+    'bankAccount',
+])
+    ->where('share_token', $token)
+    ->where('status', 'active')
+    ->firstOrFail();
 
         $ip         = $request->ip();
         $isLiked    = $ad->isLikedByIp($ip);

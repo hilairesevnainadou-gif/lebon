@@ -7,7 +7,10 @@
       "Bash(php -l d:/xampp/htdocs/lebon/app/Http/Controllers/UserController.php)",
       "Bash(php -l d:/xampp/htdocs/lebon/app/Http/Controllers/InvitationController.php)",
       "Bash(php -l d:/xampp/htdocs/lebon/app/Mail/UserInvitation.php)",
-      "Bash(php -l d:/xampp/htdocs/lebon/routes/web.php)"
+      "Bash(php -l d:/xampp/htdocs/lebon/routes/web.php)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -h 127.0.0.1 --default-character-set=utf8mb4 lebon -e ' *)",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -h 127.0.0.1 --default-character-set=utf8mb4 lebon -e \"SELECT u.email, r.slug as role FROM users u LEFT JOIN roles r ON r.id = u.role_id;\")",
+      "Bash(/c/xampp/mysql/bin/mysql.exe -u root -h 127.0.0.1 --default-character-set=utf8mb4 lebon -e \"SELECT a.id, a.title, a.price, c.cpu, c.ram_gb FROM ads a JOIN computers c ON c.ad_id = a.id;\")"
     ]
   }
 }

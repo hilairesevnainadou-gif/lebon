@@ -3,6 +3,22 @@
    Fonctions communes à toutes les vues
    ========================================================== */
 
+/* ---- Désinscrit tout service worker parasite ----
+   Ce projet n'enregistre aucun service worker (pas de sw.js ici).
+   Un service worker cassé d'un autre projet servi sur le même
+   localhost peut rester actif et intercepter les requêtes,
+   provoquant des erreurs "Response body is already used" et un
+   contenu qui clignote puis disparaît. On le désinscrit à chaque
+   chargement pour que ça ne se reproduise plus. */
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => registration.unregister());
+    }).catch(() => {});
+}
+if (window.caches && caches.keys) {
+    caches.keys().then(names => names.forEach(name => caches.delete(name))).catch(() => {});
+}
+
 /* ---- Mobile sidebar ---- */
 function toggleMobileMenu() {
     document.getElementById('mobileSidebar')?.classList.toggle('open');

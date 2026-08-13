@@ -1281,6 +1281,8 @@ function goStep(n) {
 }
 
 // Validation
+// Remplacez la partie de validation du step 5 et la fonction goNext
+
 function validateStep(step) {
     let errors = [];
 
@@ -1307,7 +1309,11 @@ function validateStep(step) {
         if (!document.querySelector('input[name="vehicle[fuel_type]"]:checked')) errors.push('Carburant requis');
         if (!document.querySelector('input[name="vehicle[gearbox]"]:checked')) errors.push('Boite requise');
     } else if (step === 5) {
-        if (files.length === 0) errors.push('Au moins une photo est requise');
+        // Vérifier si des photos ont été ajoutées
+        const fileInput = document.getElementById('photoInput');
+        if (fileInput && fileInput.files && fileInput.files.length === 0 && files.length === 0) {
+            errors.push('Au moins une photo est requise');
+        }
     }
 
     const alertEl = document.getElementById(`err${step}`);

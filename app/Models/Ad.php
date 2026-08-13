@@ -7,6 +7,7 @@ use App\Models\AdLike;
 use App\Models\AdPhoto;
 use App\Models\Seller;
 use App\Models\Vehicle;
+use App\Models\SellerBankAccount;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +21,7 @@ class Ad extends Model
 
     protected $fillable = [
         'seller_id',
+        'category',
         'title',
         'description',
         'price',
@@ -41,6 +43,15 @@ class Ad extends Model
 
     // ── Relations ────────────────────────────────────────────
 
+    /**
+ * Compte bancaire associé directement à cette annonce.
+ */
+
+    public function bankAccount(): HasOne
+{
+    return $this->hasOne(SellerBankAccount::class);
+}
+
     public function seller(): BelongsTo
     {
         return $this->belongsTo(Seller::class);
@@ -49,6 +60,11 @@ class Ad extends Model
     public function vehicle(): HasOne
     {
         return $this->hasOne(Vehicle::class);
+    }
+
+    public function computer(): HasOne
+    {
+        return $this->hasOne(Computer::class);
     }
 
     public function photos(): HasMany
@@ -71,6 +87,11 @@ class Ad extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
+    }
+
+    public function scopeCategory(Builder $query, string $category): Builder
+    {
+        return $query->where('category', $category);
     }
 
     public function scopeSold(Builder $query): Builder

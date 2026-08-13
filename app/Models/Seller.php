@@ -29,29 +29,47 @@ class Seller extends Model
         'last_active_at' => 'datetime',
     ];
 
-    // ── Relations ────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // Relations
+    // ─────────────────────────────────────────────
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function bankAccounts(): HasMany
-    {
-        return $this->hasMany(SellerBankAccount::class);
-    }
-
-    public function defaultBankAccount(): HasOne
-    {
-        return $this->hasOne(SellerBankAccount::class)->where('is_default', true);
-    }
-
+    /**
+     * Toutes les annonces du vendeur.
+     */
     public function ads(): HasMany
     {
         return $this->hasMany(Ad::class);
     }
 
-    // ── Accessors ─────────────────────────────────────────────
+    /**
+     * Tous les comptes bancaires du vendeur.
+     *
+     * Conservé pour compatibilité avec les anciennes données.
+     */
+    public function bankAccounts(): HasMany
+    {
+        return $this->hasMany(SellerBankAccount::class);
+    }
+
+    /**
+     * Ancien compte bancaire par défaut.
+     *
+     * Conservé pour compatibilité.
+     */
+    public function defaultBankAccount(): HasOne
+    {
+        return $this->hasOne(SellerBankAccount::class)
+            ->where('is_default', true);
+    }
+
+    // ─────────────────────────────────────────────
+    // Accessors
+    // ─────────────────────────────────────────────
 
     public function getFullNameAttribute(): string
     {
@@ -63,7 +81,9 @@ class Seller extends Model
         return $this->pseudo ?: $this->full_name;
     }
 
-    // ── Helpers ───────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────
 
     public static function firstOrCreateFromData(array $data): static
     {
@@ -80,11 +100,15 @@ class Seller extends Model
 
     public function activeAdsCount(): int
     {
-        return $this->ads()->where('status', 'active')->count();
+        return $this->ads()
+            ->where('status', 'active')
+            ->count();
     }
 
     public function touchActivity(): void
     {
-        $this->update(['last_active_at' => now()]);
+        $this->update([
+            'last_active_at' => now(),
+        ]);
     }
 }

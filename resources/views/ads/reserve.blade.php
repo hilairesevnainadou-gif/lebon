@@ -208,6 +208,8 @@
 <body>
 <div class="page">
 
+    @php $isPc = $ad->category === 'pc'; @endphp
+
     {{-- ── Top bar : titre centré + icône bouclier € ── --}}
     <div class="topbar">
         <button class="topbar-back" onclick="history.back()" type="button" aria-label="Retour">
@@ -241,7 +243,7 @@
     {{-- ── Section principale ── --}}
     <div class="main-section">
 
-        <div class="h1">Acheter votre véhicule en toute confiance</div>
+        <div class="h1">Acheter {{ $isPc ? 'votre ordinateur' : 'votre véhicule' }} en toute confiance</div>
 
         <div>
             <div class="h2" style="margin-bottom: 14px;">Comment ça marche ?</div>
@@ -249,8 +251,8 @@
             <div class="steps-scroll">
                 <div class="step-card">
                     <div class="step-num">1</div>
-                    <div class="step-title">Réservez le véhicule</div>
-                    <div class="step-desc">Avant ou après avoir vu le véhicule, je le réserve pour rassurer le vendeur sur ma volonté d'acheter son véhicule. Si je le souhaite, je peux négocier le prix, et ce jusqu'à la remise des clés.</div>
+                    <div class="step-title">Réservez {{ $isPc ? "l'ordinateur" : 'le véhicule' }}</div>
+                    <div class="step-desc">Avant ou après avoir vu {{ $isPc ? "l'ordinateur" : 'le véhicule' }}, je le réserve pour rassurer le vendeur sur ma volonté d'acheter son {{ $isPc ? 'ordinateur' : 'véhicule' }}. Si je le souhaite, je peux négocier le prix, et ce jusqu'à la remise {{ $isPc ? 'du matériel' : 'des clés' }}.</div>
                 </div>
                 <div class="step-card">
                     <div class="step-num">2</div>
@@ -260,7 +262,7 @@
                 <div class="step-card">
                     <div class="step-num">3</div>
                     <div class="step-title">Payer votre vendeur en toute sécurité</div>
-                    <div class="step-desc">Lors de la remise des clés, je débloque les fonds au vendeur. Nous sommes instantanément notifiés de la disponibilité des fonds. En cas d'annulation ou de négociation, je récupère tout ou partie de mon paiement.</div>
+                    <div class="step-desc">Lors de la remise {{ $isPc ? 'du matériel' : 'des clés' }}, je débloque les fonds au vendeur. Nous sommes instantanément notifiés de la disponibilité des fonds. En cas d'annulation ou de négociation, je récupère tout ou partie de mon paiement.</div>
                 </div>
             </div>
         </div>
@@ -271,6 +273,7 @@
 
             <div class="plans-wrap">
 
+                @unless($isPc)
                 {{-- Avec Garantie --}}
                 <div class="plan-card">
                     <div class="plan-header"><div class="plan-header-title">Avec Garantie Panne Mécanique</div></div>
@@ -291,19 +294,22 @@
                     @endforeach
                     <button class="voir-plus-btn" type="button">Voir plus</button>
                 </div>
+                @endunless
 
-                {{-- Sans Garantie --}}
+                {{-- Sans Garantie / Paiement sécurisé --}}
                 <div class="plan-card">
-                    <div class="plan-header"><div class="plan-header-title">Sans Garantie Panne Mécanique</div></div>
+                    <div class="plan-header"><div class="plan-header-title">{{ $isPc ? 'Paiement sécurisé' : 'Sans Garantie Panne Mécanique' }}</div></div>
                     <div class="plan-price">19,99 €</div>
-                    <div class="plan-txt">Assurez-vous que le véhicule ne vous passe pas sous le nez.</div>
+                    <div class="plan-txt">Assurez-vous que {{ $isPc ? "l'ordinateur ne vous passe pas sous le nez" : 'le véhicule ne vous passe pas sous le nez' }}.</div>
                     <div class="plan-txt">Votre argent est protégé sur un compte séquestre jusqu'au jour de la transaction.</div>
+                    @unless($isPc)
                     <div style="display:flex;flex-direction:column;gap:2px;margin-top:4px;">
                         <a class="plan-link" href="#">Plus de détails sur la garantie</a>
                         <a class="plan-link" href="#">Document d'information sur les produits d'assurance</a>
                         <a class="plan-link" href="#">Fiche d'information pré-contractuelle</a>
                         <a class="plan-link" href="#">Conditions générales de la garantie</a>
                     </div>
+                    @endunless
                 </div>
 
             </div>
@@ -323,10 +329,10 @@
     {{-- ── CTA ── --}}
     <div class="cta-wrap">
         <div class="cgu-txt">
-            En cliquant sur «&nbsp;Réserver mon véhicule&nbsp;», <a href="#">j'accepte les Conditions Générales d'Utilisation.</a>
+            En cliquant sur «&nbsp;Réserver {{ $isPc ? 'mon ordinateur' : 'mon véhicule' }}&nbsp;», <a href="#">j'accepte les Conditions Générales d'Utilisation.</a>
         </div>
-        <a href="{{ route('ads.reserve.form', $ad) }}" class="btn-reserve">
-            Réserver mon véhicule
+        <a href="{{ $isPc ? route('ads.reserve.recap', $ad) : route('ads.reserve.form', $ad) }}" class="btn-reserve">
+            Réserver {{ $isPc ? 'mon ordinateur' : 'mon véhicule' }}
         </a>
     </div>
 

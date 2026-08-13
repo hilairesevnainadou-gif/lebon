@@ -65,6 +65,11 @@
             padding: 16px 28px;
             border-radius: 10px;
         }
+        .meta {
+            font-size: 13px;
+            color: #9a9aab;
+            margin-bottom: 24px;
+        }
         .notice {
             background: #f8f8fb;
             border: 1px solid #e8e8f0;
@@ -75,6 +80,7 @@
             line-height: 1.6;
             margin-top: 24px;
         }
+        .notice strong { color: #2c2c3e; }
         .footer {
             border-top: 1px solid #f0f0f5;
             padding: 20px 40px;
@@ -87,11 +93,12 @@
 <body>
 <div class="wrapper">
     <div class="header">
-        <div class="logo">le<em>bon</em>véhicule</div>
+        <div class="logo">le<em>bon</em>coin</div>
     </div>
 
     <div class="body">
         <div class="greeting">Bonjour {{ $user->name }},</div>
+        <p class="meta">Demande de connexion reçue le {{ now()->translatedFormat('d/m/Y à H:i') }} pour le compte {{ $user->email }}.</p>
 
         <p class="text">
             Voici votre code de connexion à usage unique pour <strong>{{ config('app.name') }}</strong> :
@@ -102,16 +109,16 @@
         </div>
 
         <p class="text">
-            Ce code est valable <strong>10 minutes</strong>. Ne le partagez avec personne.
+            Ce code est valable <strong>10 minutes</strong>. Ne le partagez avec personne, {{ $user->name }} : ni l'équipe {{ config('app.name') }} ni personne d'autre ne vous le demandera jamais.
         </p>
 
         <div class="notice">
-            Si vous n'êtes pas à l'origine de cette tentative de connexion, ignorez cet email et changez votre mot de passe.
+            Si vous n'êtes pas à l'origine de cette tentative de connexion, ignorez cet email et <strong>changez votre mot de passe</strong> dès que possible.
         </div>
     </div>
 
     <div class="footer">
-        &copy; {{ date('Y') }} {{ config('app.name') }}
+        &copy; {{ date('Y') }} {{ config('app.name') }} — cet email a été envoyé automatiquement, merci de ne pas y répondre.
     </div>
 </div>
 </body>

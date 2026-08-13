@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             SellerSeeder::class,
             SellerBankAccountSeeder::class,
             AdSeeder::class,
+            PcAdSeeder::class,
         ]);
     }
 }

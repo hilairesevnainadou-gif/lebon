@@ -1,4 +1,5 @@
 ﻿@php
+    $isPc      = $ad->category === 'pc';
     $refCode   = 'LBC-' . strtoupper(substr(md5((string)$ad->id . ($ad->share_token ?? '')), 0, 8));
     $fmtTotal  = $total == intval($total)
         ? number_format((float)$total, 0, ',', ' ').' €'
@@ -331,7 +332,7 @@
             <div class="step-body">
                 <div class="step-txt">J'effectue le virement correspondant à la somme négociée en amont ou le prix de base :</div>
                 <div class="price-box">
-                    <span>Prix du véhicule</span>
+                    <span>Prix {{ $isPc ? "de l'ordinateur" : 'du véhicule' }}</span>
                     <span>{{ $fmtTotal }}</span>
                 </div>
             </div>
@@ -357,7 +358,7 @@
         </div>
 
         {{-- Lien + bouton --}}
-        <a class="cancel-link" href="{{ url()->previous() }}">Je ne souhaite plus acheter ce véhicule</a>
+        <a class="cancel-link" href="{{ url()->previous() }}">Je ne souhaite plus acheter {{ $isPc ? 'cet ordinateur' : 'ce véhicule' }}</a>
         <button class="btn-virement" type="button" id="btnVirement">J'ai fait mon virement</button>
 
         {{-- FAQ --}}
@@ -423,12 +424,14 @@
             </div>
             <div class="bravo-step-txt">Alors, vous pourrez organiser un rendez-vous avec le vendeur pour procéder au paiement et à la remise des clés. À ce stade, il sera toujours possible de négocier le prix ou d'annuler la transaction.</div>
         </div>
+        @unless($isPc)
         <div class="bravo-step">
             <div class="bravo-step-col">
                 <div class="bravo-dot"></div>
             </div>
             <div class="bravo-step-txt" style="padding-bottom:6px;">Après la vente, vous pourrez finaliser la souscription de votre garantie panne mécanique. Le paiement de celle-ci se fera à la finalisation de la souscription.</div>
         </div>
+        @endunless
 
         <div class="bravo-btn-wrap">
             <button class="btn-compris" type="button" onclick="document.getElementById('bravoOverlay').classList.remove('open')">J'ai compris !</button>

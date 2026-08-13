@@ -16,6 +16,7 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             ['name' => 'Voir mes annonces', 'slug' => 'menu.ads.view'],
             ['name' => 'Gérer les utilisateurs', 'slug' => 'menu.users.view'],
+            ['name' => 'Voir l\'espace annonces PC', 'slug' => 'menu.pc.view'],
         ];
 
         foreach ($permissions as $permission) {
@@ -28,6 +29,11 @@ class RolePermissionSeeder extends Seeder
         $vendeur = Role::updateOrCreate(['slug' => 'vendeur'], ['name' => 'Vendeur']);
         $vendeur->permissions()->sync(
             Permission::where('slug', 'menu.ads.view')->pluck('id')
+        );
+
+        $vendeurPc = Role::updateOrCreate(['slug' => 'vendeur-pc'], ['name' => 'Vendeur PC']);
+        $vendeurPc->permissions()->sync(
+            Permission::whereIn('slug', ['menu.ads.view', 'menu.pc.view'])->pluck('id')
         );
     }
 }

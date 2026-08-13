@@ -12,6 +12,7 @@ class SellerBankAccount extends Model
 
     protected $fillable = [
         'seller_id',
+        'ad_id',
         'iban',
         'bic',
         'bank_name',
@@ -23,31 +24,61 @@ class SellerBankAccount extends Model
         'is_default' => 'boolean',
     ];
 
-    // ── Relations ────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // Relations
+    // ─────────────────────────────────────────────
 
+    /**
+     * Vendeur propriétaire du compte.
+     */
     public function seller(): BelongsTo
     {
         return $this->belongsTo(Seller::class);
     }
 
-    // ── Accessors ─────────────────────────────────────────────
+    /**
+     * Annonce à laquelle appartient ce compte bancaire.
+     */
+    public function ad(): BelongsTo
+    {
+        return $this->belongsTo(Ad::class);
+    }
+
+    // ─────────────────────────────────────────────
+    // Accessors
+    // ─────────────────────────────────────────────
 
     public function getMaskedIbanAttribute(): string
     {
-        $clean = preg_replace('/\s+/', '', $this->iban);
+        $clean = preg_replace('/\s+/', '', (string) $this->iban);
+
+        if (strlen($clean) <= 8) {
+            return $clean;
+        }
+
         return substr($clean, 0, 4)
-             . ' **** **** **** **** '
-             . substr($clean, -4);
+            . ' **** **** **** **** '
+            . substr($clean, -4);
     }
 
-    // ── Helpers ───────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────
 
+    /**
+     * Définit ce compte comme compte par défaut
+     * pour son vendeur.
+     */
     public function setAsDefault(): void
     {
         static::where('seller_id', $this->seller_id)
             ->where('id', '!=', $this->id)
-            ->update(['is_default' => false]);
+            ->update([
+                'is_default' => false,
+            ]);
 
-        $this->update(['is_default' => true]);
+        $this->update([
+            'is_default' => true,
+        ]);
     }
 }
