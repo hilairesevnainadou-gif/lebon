@@ -60,7 +60,7 @@ class AdController extends Controller
         $allAds = $publishedAds->concat($drafts)->sortByDesc('updated_at');
 
         // Paginer manuellement
-        $currentPage = request()->get('page', 1);
+        $currentPage = request()->query('page', 1);
         $perPage = 12;
         $currentItems = $allAds->slice(($currentPage - 1) * $perPage, $perPage);
         $ads = new \Illuminate\Pagination\LengthAwarePaginator(
@@ -81,7 +81,12 @@ class AdController extends Controller
         $category = $request->query('category');
         $status   = $request->query('status');
 
-        $query = Ad::with(['vehicle', 'computer', 'photos', 'seller'])->latest();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Si admin, retirer les global scopes pour voir toutes les annonces
+        $base = $user && $user->isAdmin() ? Ad::withoutGlobalScopes() : Ad::query();
+        $query = $base->with(['vehicle', 'computer', 'photos', 'seller'])->latest();
 
         if (in_array($category, ['vehicule', 'pc'], true)) {
             $query->category($category);
