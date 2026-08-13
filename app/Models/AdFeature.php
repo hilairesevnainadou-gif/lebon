@@ -37,4 +37,4 @@ class AdFeature extends Model
             }
         }
     }
-}s
+}

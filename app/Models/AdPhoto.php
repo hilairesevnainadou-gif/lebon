@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Ad;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -42,7 +43,7 @@ class AdPhoto extends Model
     public static function deleteAllForAd(int $adId): void
     {
         $photos = self::where('ad_id', $adId)->get();
-        
+
         foreach ($photos as $photo) {
             if ($photo->path) {
                 Storage::disk($photo->disk ?? 'public')->delete($photo->path);
