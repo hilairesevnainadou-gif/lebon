@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdFeature extends Model
 {
@@ -12,29 +11,30 @@ class AdFeature extends Model
 
     protected $fillable = [
         'ad_id',
-        'label',
+        'name',
     ];
 
-    // ── Relations ────────────────────────────────────────────
-
-    public function ad(): BelongsTo
+    public function ad()
     {
         return $this->belongsTo(Ad::class);
     }
 
-    // ── Helpers ───────────────────────────────────────────────
-
-    public static function syncForAd(int $adId, array $labels): void
+    /**
+     * Synchronise les équipements pour une annonce
+     */
+    public static function syncForAd(int $adId, array $features): void
     {
-        static::where('ad_id', $adId)->delete();
+        // Supprimer les anciens équipements
+        self::where('ad_id', $adId)->delete();
 
-        $records = array_map(fn($label) => [
-            'ad_id'      => $adId,
-            'label'      => $label,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ], $labels);
-
-        static::insert($records);
+        // Ajouter les nouveaux équipements
+        foreach ($features as $feature) {
+            if (!empty($feature)) {
+                self::create([
+                    'ad_id' => $adId,
+                    'name' => trim($feature),
+                ]);
+            }
+        }
     }
-}
+}s
