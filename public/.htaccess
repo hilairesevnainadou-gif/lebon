@@ -5,6 +5,11 @@
 
     RewriteEngine On
 
+    # Forcer /storage/* à passer par Laravel (PHP) plutôt que par le
+    # gestionnaire statique d'Apache, qui peut refuser (403) de suivre
+    # le lien symbolique public/storage sur certains hébergeurs mutualisés.
+    RewriteRule ^storage/ index.php [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

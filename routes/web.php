@@ -7,10 +7,27 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PcAdController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 // ── Activation de compte (invitation admin) ───────────────────
 Route::get('/activation/{token}',  [InvitationController::class, 'show'])->name('invitation.show');
 Route::post('/activation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
+
+// ── Fichiers du disque "public" servis via PHP ─────────────────
+// Contourne les hébergeurs mutualisés (ex: LWS) qui bloquent
+// Apache "Options FollowSymLinks" et renvoient un 403 sur le lien
+// symbolique public/storage → storage/app/public.
+Route::get('/storage/{path}', function (string $path) {
+    $disk = Storage::disk('public');
+
+    abort_unless($disk->exists($path), 404);
+
+    $fullPath = $disk->path($path);
+
+    return response()->file($fullPath, [
+        'Content-Type' => $disk->mimeType($path) ?? 'application/octet-stream',
+    ]);
+})->where('path', '.*')->name('storage.local');
 
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
