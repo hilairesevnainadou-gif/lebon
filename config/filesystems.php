@@ -41,7 +41,13 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // "/media" et non "/storage" : l'hébergeur (LWS) renvoie un 403
+            // (Content-Type text/html) au niveau serveur sur toute URL
+            // contenant "/storage/", avant même que PHP ne s'exécute.
+            // Le lien symbolique "media" (voir 'links' plus bas) pointe vers
+            // le même dossier réel et est servi en fichier statique par
+            // Apache normalement — pas de contournement PHP nécessaire.
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
             'visibility' => 'public',
             // "true" : un échec d'écriture (permissions, quota disque...) doit
             // lever une exception visible plutôt que d'être avalé en silence,
@@ -79,6 +85,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('media') => storage_path('app/public'),
     ],
 
 ];
