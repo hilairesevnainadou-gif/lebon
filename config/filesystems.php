@@ -41,7 +41,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // "/media" et non "/storage" : Apache (LWS) bloque au niveau
+            // serveur toute URL contenant "/storage/", avant même que PHP
+            // ne s'exécute — confirmé par test direct. Voir routes/web.php.
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
             'visibility' => 'public',
             // "true" : un échec d'écriture (permissions, quota disque...) doit
             // lever une exception visible plutôt que d'être avalé en silence,
