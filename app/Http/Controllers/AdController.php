@@ -267,7 +267,9 @@ class AdController extends Controller
                     . '.'
                     . $file->getClientOriginalExtension();
 
-                $directory = 'ads/' . $ad->id . '/photos';
+                // "annonces" et non "ads" : ce dernier mot dans l'URL est
+                // bloqué par les bloqueurs de publicités (ERR_BLOCKED_BY_CLIENT).
+                $directory = 'annonces/' . $ad->id . '/photos';
 
                 $path = $file->storeAs(
                     $directory,
@@ -470,7 +472,7 @@ class AdController extends Controller
                     . $file->getClientOriginalExtension();
 
                 $path = $file->storeAs(
-                    'ads/' . $ad->id . '/photos',
+                    'annonces/' . $ad->id . '/photos',
                     $filename,
                     'public'
                 );

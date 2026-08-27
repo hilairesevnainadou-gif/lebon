@@ -130,7 +130,9 @@ class PcAdController extends Controller
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $index => $file) {
                     $filename  = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                    $directory = 'ads/' . $ad->id . '/photos';
+                    // "annonces" et non "ads" : ce dernier mot dans l'URL est
+                    // bloqué par les bloqueurs de publicités (ERR_BLOCKED_BY_CLIENT).
+                    $directory = 'annonces/' . $ad->id . '/photos';
                     $path      = $file->storeAs($directory, $filename, 'public');
 
                     AdPhoto::create([
