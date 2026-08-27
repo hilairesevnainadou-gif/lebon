@@ -7,7 +7,6 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PcAdController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 
 // ── Activation de compte (invitation admin) ───────────────────
 Route::get('/activation/{token}',  [InvitationController::class, 'show'])->name('invitation.show');
@@ -45,36 +44,6 @@ Route::get('/opcache-status', function () {
 
     return response('<pre>' . e(implode("\n", $lines)) . '</pre>');
 })->name('opcache.debug');
-
-// ── Fichiers du disque "public" servis via PHP ─────────────────
-// Apache (LWS) bloque au niveau serveur toute URL contenant "/storage/"
-// (403 brut, avant même d'atteindre PHP — confirmé : ni Laravel ni un
-// éventuel proxy PHP personnalisé ne reçoivent jamais la requête).
-// D'où le préfixe "/media/" à la place de "/storage/".
-Route::get('/media/{path}', function (string $path) {
-    $disk = Storage::disk('public');
-
-    if (!$disk->exists($path)) {
-        // Diagnostic temporaire : si le fichier est introuvable, on explique
-        // pourquoi au lieu d'un 404 muet — à retirer une fois le problème résolu.
-        return response('<pre>' . e(implode("\n", [
-            'Fichier introuvable : ' . $path,
-            'Chemin recherché    : ' . $disk->path($path),
-            'is_dir(dossier parent) => ' . (is_dir(dirname($disk->path($path))) ? 'oui' : 'NON'),
-            'ini_get(open_basedir)  => ' . (ini_get('open_basedir') ?: '(vide, pas de restriction)'),
-            'Contenu du dossier parent :',
-            ...(is_dir(dirname($disk->path($path)))
-                ? array_map(fn ($f) => '  - ' . $f, scandir(dirname($disk->path($path))))
-                : ['  (dossier inaccessible depuis PHP)']),
-        ])) . '</pre>', 404);
-    }
-
-    $fullPath = $disk->path($path);
-
-    return response()->file($fullPath, [
-        'Content-Type' => $disk->mimeType($path) ?? 'application/octet-stream',
-    ]);
-})->where('path', '.*')->name('storage.local');
 
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
