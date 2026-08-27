@@ -30,6 +30,40 @@ Route::get('/media/{path}', function (string $path) {
     ]);
 })->where('path', '.*')->name('storage.local');
 
+// ── DIAGNOSTIC TEMPORAIRE — à supprimer une fois le problème résolu ──
+Route::get('/mediacheck', function () {
+    $disk = Storage::disk('public');
+    $testPath = 'annonces/23/photos/12462c1b-6ee5-4c32-89ce-5e40df304c52.png';
+
+    $lines = [
+        'base_path()                => ' . base_path(),
+        'storage_path()             => ' . storage_path(),
+        'storage_path("app/public") => ' . storage_path('app/public'),
+        'realpath(storage/app/public) => ' . (realpath(storage_path('app/public')) ?: '(realpath a échoué / inaccessible)'),
+        'is_dir(storage/app/public) => ' . (is_dir(storage_path('app/public')) ? 'oui' : 'NON'),
+        'is_readable(storage/app/public) => ' . (is_readable(storage_path('app/public')) ? 'oui' : 'NON'),
+        'ini_get(open_basedir)      => ' . (ini_get('open_basedir') ?: '(vide, pas de restriction)'),
+        '',
+        'Chemin testé : ' . $testPath,
+        'Storage::disk(public)->exists() => ' . ($disk->exists($testPath) ? 'oui' : 'NON'),
+        'Storage::disk(public)->path()   => ' . $disk->path($testPath),
+        'file_exists() direct sur ce chemin => ' . (file_exists($disk->path($testPath)) ? 'oui' : 'NON'),
+        '',
+        'Contenu de storage/app/public/annonces/23/photos :',
+    ];
+
+    $photosDir = storage_path('app/public/annonces/23/photos');
+    if (is_dir($photosDir)) {
+        foreach (scandir($photosDir) as $f) {
+            $lines[] = '  - ' . $f;
+        }
+    } else {
+        $lines[] = '  (dossier introuvable ou inaccessible depuis PHP)';
+    }
+
+    return response('<pre>' . e(implode("\n", $lines)) . '</pre>');
+})->name('mediacheck.debug');
+
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
 Route::get('/vehicule/favoris',          [AdController::class, 'favorites'])->name('ads.favorites');
