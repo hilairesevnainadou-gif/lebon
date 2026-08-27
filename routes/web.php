@@ -14,10 +14,11 @@ Route::get('/activation/{token}',  [InvitationController::class, 'show'])->name(
 Route::post('/activation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
 
 // ── Fichiers du disque "public" servis via PHP ─────────────────
-// Contourne les hébergeurs mutualisés (ex: LWS) qui bloquent
-// Apache "Options FollowSymLinks" et renvoient un 403 sur le lien
-// symbolique public/storage → storage/app/public.
-Route::get('/storage/{path}', function (string $path) {
+// Contourne les hébergeurs mutualisés (ex: LWS) qui bloquent au
+// niveau Apache toute URL contenant "/storage/" (403 brut, avant
+// même d'atteindre PHP — un .htaccess ne peut pas passer outre).
+// D'où le préfixe "/media/" à la place de "/storage/".
+Route::get('/media/{path}', function (string $path) {
     $disk = Storage::disk('public');
 
     abort_unless($disk->exists($path), 404);

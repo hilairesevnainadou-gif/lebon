@@ -41,7 +41,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // "/media" et non "/storage" : certains hébergeurs mutualisés (LWS)
+            // bloquent au niveau Apache toute URL contenant "/storage/", avant
+            // même que la requête n'atteigne PHP. Voir routes/web.php.
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
