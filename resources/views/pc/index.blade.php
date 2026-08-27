@@ -100,6 +100,19 @@
 
         .empty-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
         .empty-text { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+        .ad-skeleton {
+            height: 320px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(90deg, #eeece6 25%, #f5f4f0 37%, #eeece6 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
     </style>
 </head>
 <body>
@@ -131,61 +144,42 @@
 
             <div style="margin-bottom:24px;">
                 <h1 class="section-title">Annonces PC</h1>
-                <p class="section-subtitle">Espace dédié à la vente d'ordinateurs — {{ $ads->total() }} annonce(s)</p>
+                <p class="section-subtitle">Espace dédié à la vente d'ordinateurs — <span id="pcTotalCount">{{ $ads->total() }}</span> annonce(s)</p>
             </div>
 
-            @if($ads->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                            <line x1="8" y1="21" x2="16" y2="21"/>
-                            <line x1="12" y1="17" x2="12" y2="21"/>
-                        </svg>
-                    </div>
-                    <div class="empty-title">Aucune annonce PC pour le moment</div>
-                    <div class="empty-text">Publiez votre première annonce d'ordinateur</div>
-                    <a href="{{ route('pc.create') }}" class="btn-primary">Créer une annonce PC</a>
-                </div>
-            @else
-                <div class="ads-grid">
-                    @foreach($ads as $ad)
-                        <a href="{{ route('pc.show', $ad) }}" class="ad-card">
-                            <div class="ad-image">
-                                @if($ad->photos->isNotEmpty())
-                                    <img src="{{ $ad->photos->first()->url }}" alt="{{ $ad->title }}" loading="lazy">
-                                @else
-                                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                                        <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                                    </div>
-                                @endif
-                                <div class="ad-badge">{{ $ad->status === 'active' ? 'Active' : $ad->status }}</div>
-                            </div>
-                            <div class="ad-content">
-                                <div class="ad-title">{{ $ad->title }}</div>
-                                <div class="ad-price">{{ $ad->formatted_price }}</div>
-                                @if($ad->computer)
-                                    <div class="ad-meta">
-                                        <span class="ad-meta-item">{{ $ad->computer->cpu }}</span>
-                                        <span class="ad-meta-item">{{ $ad->computer->ram_gb }} Go RAM</span>
-                                        <span class="ad-meta-item">{{ $ad->computer->formatted_storage }}</span>
-                                    </div>
-                                @endif
-                                <div class="ad-footer">
-                                    <span>{{ $ad->city }}</span>
-                                    <span>{{ $ad->published_at?->diffForHumans() }}</span>
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
+            <div class="ads-grid" id="adsGrid" aria-live="polite">
+                <div class="ad-skeleton"></div>
+                <div class="ad-skeleton"></div>
+                <div class="ad-skeleton"></div>
+            </div>
 
-                @if($ads->hasPages())
-                    <div class="pagination" style="margin-top:24px;">
-                        {{ $ads->links() }}
-                    </div>
-                @endif
-            @endif
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                </div>
+                <div class="empty-title">Aucune annonce PC pour le moment</div>
+                <div class="empty-text">Publiez votre première annonce d'ordinateur</div>
+                <a href="{{ route('pc.create') }}" class="btn-primary">Créer une annonce PC</a>
+            </div>
+
+            <div class="empty-state" id="errorState" style="display:none;">
+                <div class="empty-icon" style="background:var(--red-light);">
+                    <svg fill="none" stroke="var(--red)" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="empty-title">Impossible de charger vos annonces</div>
+                <div class="empty-text">Une erreur est survenue lors du chargement. Veuillez réessayer.</div>
+                <button type="button" class="btn-primary" id="retryBtn" style="border:none;">Réessayer</button>
+            </div>
+
+            <div class="pagination" id="paginationContainer" style="margin-top:24px;"></div>
 
         </div>
     </div>
@@ -209,5 +203,112 @@
 </div>
 
 <script src="{{ asset('js/lebon.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // ========== Chargement des annonces PC via axios ==========
+    const PC_DATA_URL = '{{ route('pc.index.data') }}';
+
+    const adsGrid = document.getElementById('adsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const errorState = document.getElementById('errorState');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const pcTotalCount = document.getElementById('pcTotalCount');
+
+    let currentPage = 1;
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    }
+
+    function pcCardHTML(item) {
+        const photoHtml = item.photo_url
+            ? `<img src="${item.photo_url}" alt="${escapeHtml(item.title)}" loading="lazy">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>`;
+
+        const computerHtml = item.computer ? `
+            <div class="ad-meta">
+                <span class="ad-meta-item">${escapeHtml(item.computer.cpu)}</span>
+                <span class="ad-meta-item">${escapeHtml(item.computer.ram)}</span>
+                <span class="ad-meta-item">${escapeHtml(item.computer.storage)}</span>
+            </div>` : '';
+
+        return `
+            <a href="${item.show_url}" class="ad-card">
+                <div class="ad-image">
+                    ${photoHtml}
+                    <div class="ad-badge">${item.status === 'active' ? 'Active' : escapeHtml(item.status)}</div>
+                </div>
+                <div class="ad-content">
+                    <div class="ad-title">${escapeHtml(item.title)}</div>
+                    <div class="ad-price">${escapeHtml(item.price)}</div>
+                    ${computerHtml}
+                    <div class="ad-footer">
+                        <span>${escapeHtml(item.city)}</span>
+                        <span>${escapeHtml(item.published_at)}</span>
+                    </div>
+                </div>
+            </a>`;
+    }
+
+    function renderAds(items) {
+        if (!items.length) {
+            adsGrid.style.display = 'none';
+            paginationContainer.innerHTML = '';
+            emptyState.style.display = '';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        adsGrid.style.display = '';
+        adsGrid.innerHTML = items.map(pcCardHTML).join('');
+    }
+
+    function renderPagination(pagination) {
+        if (pagination.last_page <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        for (let page = 1; page <= pagination.last_page; page++) {
+            html += `<button type="button" class="page-link ${page === pagination.current_page ? 'active' : ''}" data-page="${page}">${page}</button>`;
+        }
+        paginationContainer.innerHTML = html;
+
+        paginationContainer.querySelectorAll('.page-link').forEach(btn => {
+            btn.addEventListener('click', () => {
+                loadAds(parseInt(btn.dataset.page, 10));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    }
+
+    async function loadAds(page = 1) {
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+        adsGrid.style.display = '';
+        adsGrid.innerHTML = '<div class="ad-skeleton"></div><div class="ad-skeleton"></div><div class="ad-skeleton"></div>';
+
+        try {
+            const { data } = await axios.get(PC_DATA_URL, { params: { page } });
+            currentPage = data.pagination.current_page;
+            if (pcTotalCount) pcTotalCount.textContent = data.pagination.total;
+            renderAds(data.items);
+            renderPagination(data.pagination);
+        } catch (error) {
+            adsGrid.style.display = 'none';
+            paginationContainer.innerHTML = '';
+            errorState.style.display = '';
+        }
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => loadAds(currentPage));
+
+    loadAds();
+</script>
 </body>
 </html>

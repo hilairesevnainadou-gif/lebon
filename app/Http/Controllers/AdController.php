@@ -156,6 +156,27 @@ class AdController extends Controller
         $category = $request->query('category');
         $status   = $request->query('status');
 
+        $counts = [
+            'total'    => Ad::count(),
+            'active'   => Ad::where('status', 'active')->count(),
+            'paused'   => Ad::where('status', 'paused')->count(),
+            'sold'     => Ad::where('status', 'sold')->count(),
+            'vehicule' => Ad::category('vehicule')->count(),
+            'pc'       => Ad::category('pc')->count(),
+        ];
+
+        // Le contenu de la grille est chargé côté client via axios,
+        // voir AdController::adminAllData().
+        return view('ads.admin-index', compact('counts', 'category', 'status'));
+    }
+
+    // ── Données JSON de "Toutes les annonces" (chargées via axios) ──
+
+    public function adminAllData(Request $request): JsonResponse
+    {
+        $category = $request->query('category');
+        $status   = $request->query('status');
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -171,18 +192,36 @@ class AdController extends Controller
             $query->where('status', $status);
         }
 
-        $ads = $query->paginate(20)->withQueryString();
+        $perPage = 20;
+        $currentPage = max(1, (int) $request->query('page', 1));
+        $paginated = $query->paginate($perPage, ['*'], 'page', $currentPage);
 
-        $counts = [
-            'total'    => Ad::count(),
-            'active'   => Ad::where('status', 'active')->count(),
-            'paused'   => Ad::where('status', 'paused')->count(),
-            'sold'     => Ad::where('status', 'sold')->count(),
-            'vehicule' => Ad::category('vehicule')->count(),
-            'pc'       => Ad::category('pc')->count(),
-        ];
+        $items = $paginated->getCollection()->map(function (Ad $ad) {
+            $isPc = $ad->category === 'pc';
 
-        return view('ads.admin-index', compact('ads', 'counts', 'category', 'status'));
+            return [
+                'id'           => $ad->id,
+                'is_pc'        => $isPc,
+                'status'       => $ad->status,
+                'title'        => $ad->title,
+                'price'        => $ad->formatted_price,
+                'city'         => $ad->city,
+                'seller'       => $ad->seller->pseudo ?? '—',
+                'published_at' => $ad->published_at?->diffForHumans(),
+                'photo_url'    => optional($ad->photos->first())->url,
+                'show_url'     => $isPc ? route('pc.show', $ad) : route('ads.show', $ad),
+            ];
+        })->values();
+
+        return response()->json([
+            'success'    => true,
+            'items'      => $items,
+            'pagination' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+                'total'        => $paginated->total(),
+            ],
+        ]);
     }
 
     // ── Formulaire de création ────────────────────────────────

@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     // (Laravel matche les routes dans l'ordre de déclaration) et pc.index
     // devient inatteignable (404 au lieu de la liste des annonces PC).
     Route::get('/d6t1z/pc',           [PcAdController::class, 'index'])->name('pc.index');
+    Route::get('/d6t1z/pc/data',      [PcAdController::class, 'indexData'])->name('pc.index.data');
     Route::get('/d6t1z/pc/creer',     [PcAdController::class, 'create'])->name('pc.create');
     Route::post('/d6t1z/pc',          [PcAdController::class, 'store'])->name('pc.store');
     Route::get('/d6t1z/pc/{ad}',      [PcAdController::class, 'show'])->name('pc.show');
@@ -109,6 +110,7 @@ Route::middleware('auth')->group(function () {
     // Gestion des utilisateurs (admin uniquement)
     Route::middleware('admin')->group(function () {
         Route::get('/e5w9n/annonces',       [AdController::class, 'adminAll'])->name('admin.ads.index');
+        Route::get('/e5w9n/annonces/data',  [AdController::class, 'adminAllData'])->name('admin.ads.index.data');
         Route::get('/e5w9n',                [UserController::class, 'index'])->name('users.index');
         Route::get('/e5w9n/creer',          [UserController::class, 'create'])->name('users.create');
         Route::post('/e5w9n',               [UserController::class, 'store'])->name('users.store');

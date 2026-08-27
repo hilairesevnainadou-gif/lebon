@@ -8,7 +8,9 @@ use App\Models\AdFeature;
 use App\Models\AdPhoto;
 use App\Models\Computer;
 use App\Models\Seller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -38,15 +40,64 @@ class PcAdController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $ads = $user->isAdmin()
-            ? Ad::with(['computer', 'photos'])->category('pc')->latest()->paginate(12)
-            : Ad::with(['computer', 'photos'])
-                ->category('pc')
-                ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
-                ->latest()
-                ->paginate(12);
+        // "Annonces PC" : toujours uniquement les annonces du vendeur connecté,
+        // y compris pour un admin. $ads sert seulement au badge de la sidebar,
+        // le contenu réel est chargé côté client via axios (voir indexData()).
+        $totalAds = Ad::category('pc')
+            ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
+            ->count();
+
+        $ads = new \Illuminate\Pagination\LengthAwarePaginator(collect(), $totalAds, 12, 1);
 
         return view('pc.index', compact('ads'));
+    }
+
+    // ── Données JSON des annonces PC (chargées via axios) ────────
+
+    public function indexData(Request $request): JsonResponse
+    {
+        $this->authorizePcAccess();
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Toujours filtré sur le seller_id du vendeur connecté, jamais toutes les annonces.
+        $query = Ad::with(['computer', 'photos'])
+            ->category('pc')
+            ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
+            ->latest();
+
+        $perPage = 12;
+        $currentPage = max(1, (int) $request->query('page', 1));
+        $paginated = $query->paginate($perPage, ['*'], 'page', $currentPage);
+
+        $items = $paginated->getCollection()->map(function (Ad $ad) {
+            return [
+                'id'           => $ad->id,
+                'status'       => $ad->status,
+                'title'        => $ad->title,
+                'price'        => $ad->formatted_price,
+                'city'         => $ad->city,
+                'published_at' => $ad->published_at?->diffForHumans(),
+                'photo_url'    => optional($ad->photos->first())->url,
+                'computer'     => $ad->computer ? [
+                    'cpu'     => $ad->computer->cpu,
+                    'ram'     => $ad->computer->ram_gb . ' Go RAM',
+                    'storage' => $ad->computer->formatted_storage,
+                ] : null,
+                'show_url'     => route('pc.show', $ad),
+            ];
+        })->values();
+
+        return response()->json([
+            'success'    => true,
+            'items'      => $items,
+            'pagination' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+                'total'        => $paginated->total(),
+            ],
+        ]);
     }
 
     // ── Formulaire de création ────────────────────────────────

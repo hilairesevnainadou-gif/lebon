@@ -128,6 +128,19 @@
 
         .empty-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
         .empty-text { font-size: 14px; color: var(--muted); }
+
+        .ad-skeleton {
+            height: 320px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(90deg, #eeece6 25%, #f5f4f0 37%, #eeece6 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
     </style>
 </head>
 <body>
@@ -151,7 +164,7 @@
 
             <div style="margin-bottom:24px;">
                 <h1 class="section-title">Toutes les annonces</h1>
-                <p class="section-subtitle">Vue administrateur — véhicules et PC, actives ou non — {{ $ads->total() }} annonce(s)</p>
+                <p class="section-subtitle">Vue administrateur — véhicules et PC, actives ou non — <span id="totalCount">{{ $counts['total'] }}</span> annonce(s)</p>
             </div>
 
             <div class="stats-row">
@@ -164,78 +177,36 @@
             </div>
 
             <div class="filters-row">
-                <div class="filter-group">
-                    <a href="{{ route('admin.ads.index', array_filter(['status' => $status])) }}"
-                       class="filter-link {{ !$category ? 'active' : '' }}">Toutes catégories</a>
-                    <a href="{{ route('admin.ads.index', array_filter(['category' => 'vehicule', 'status' => $status])) }}"
-                       class="filter-link {{ $category === 'vehicule' ? 'active' : '' }}">Véhicules</a>
-                    <a href="{{ route('admin.ads.index', array_filter(['category' => 'pc', 'status' => $status])) }}"
-                       class="filter-link {{ $category === 'pc' ? 'active' : '' }}">PC</a>
+                <div class="filter-group" id="categoryFilters">
+                    <button type="button" class="filter-link {{ !$category ? 'active' : '' }}" data-category="">Toutes catégories</button>
+                    <button type="button" class="filter-link {{ $category === 'vehicule' ? 'active' : '' }}" data-category="vehicule">Véhicules</button>
+                    <button type="button" class="filter-link {{ $category === 'pc' ? 'active' : '' }}" data-category="pc">PC</button>
                 </div>
-                <div class="filter-group">
-                    <a href="{{ route('admin.ads.index', array_filter(['category' => $category])) }}"
-                       class="filter-link {{ !$status ? 'active' : '' }}">Tous statuts</a>
-                    <a href="{{ route('admin.ads.index', array_filter(['category' => $category, 'status' => 'active'])) }}"
-                       class="filter-link {{ $status === 'active' ? 'active' : '' }}">Actives</a>
-                    <a href="{{ route('admin.ads.index', array_filter(['category' => $category, 'status' => 'paused'])) }}"
-                       class="filter-link {{ $status === 'paused' ? 'active' : '' }}">En pause</a>
-                    <a href="{{ route('admin.ads.index', array_filter(['category' => $category, 'status' => 'sold'])) }}"
-                       class="filter-link {{ $status === 'sold' ? 'active' : '' }}">Vendues</a>
+                <div class="filter-group" id="statusFilters">
+                    <button type="button" class="filter-link {{ !$status ? 'active' : '' }}" data-status="">Tous statuts</button>
+                    <button type="button" class="filter-link {{ $status === 'active' ? 'active' : '' }}" data-status="active">Actives</button>
+                    <button type="button" class="filter-link {{ $status === 'paused' ? 'active' : '' }}" data-status="paused">En pause</button>
+                    <button type="button" class="filter-link {{ $status === 'sold' ? 'active' : '' }}" data-status="sold">Vendues</button>
                 </div>
             </div>
 
-            @if($ads->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-title">Aucune annonce ne correspond à ces filtres</div>
-                    <div class="empty-text">Essayez d'élargir les filtres ci-dessus.</div>
-                </div>
-            @else
-                <div class="ads-grid">
-                    @foreach($ads as $ad)
-                        @php
-                            $isPc = $ad->category === 'pc';
-                            $showRoute = $isPc ? route('pc.show', $ad) : route('ads.show', $ad);
-                        @endphp
-                        <a href="{{ $showRoute }}" class="ad-card">
-                            <div class="ad-image">
-                                @if($ad->photos->isNotEmpty())
-                                    <img src="{{ $ad->photos->first()->url }}" alt="{{ $ad->title }}" loading="lazy">
-                                @else
-                                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                                        <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                    </div>
-                                @endif
-                                <div class="ad-badges">
-                                    <div class="ad-badge category">{{ $isPc ? 'PC' : 'Véhicule' }}</div>
-                                    <div class="ad-badge {{ $ad->status }}">
-                                        @switch($ad->status)
-                                            @case('active') Active @break
-                                            @case('sold') Vendue @break
-                                            @case('paused') En pause @break
-                                            @default {{ $ad->status }}
-                                        @endswitch
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="ad-content">
-                                <div class="ad-title">{{ $ad->title }}</div>
-                                <div class="ad-price">{{ $ad->formatted_price }}</div>
-                                <div class="ad-seller">Vendeur : {{ $ad->seller->pseudo ?? '—' }}</div>
-                                <div class="ad-footer">
-                                    <span>{{ $ad->city }}</span>
-                                    <span>{{ $ad->published_at?->diffForHumans() }}</span>
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
+            <div class="ads-grid" id="adsGrid" aria-live="polite">
+                <div class="ad-skeleton"></div>
+                <div class="ad-skeleton"></div>
+                <div class="ad-skeleton"></div>
+            </div>
 
-                @if($ads->hasPages())
-                    <div class="pagination" style="margin-top:24px;">
-                        {{ $ads->links() }}
-                    </div>
-                @endif
-            @endif
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-title">Aucune annonce ne correspond à ces filtres</div>
+                <div class="empty-text">Essayez d'élargir les filtres ci-dessus.</div>
+            </div>
+
+            <div class="empty-state" id="errorState" style="display:none;">
+                <div class="empty-title">Impossible de charger les annonces</div>
+                <div class="empty-text">Une erreur est survenue lors du chargement. <button type="button" id="retryBtn" style="border:none;background:none;color:var(--orange);font-weight:700;cursor:pointer;text-decoration:underline;">Réessayer</button></div>
+            </div>
+
+            <div class="pagination" id="paginationContainer" style="margin-top:24px;"></div>
 
         </div>
     </div>
@@ -259,5 +230,145 @@
 </div>
 
 <script src="{{ asset('js/lebon.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // ========== Chargement de "Toutes les annonces" via axios ==========
+    const ADMIN_ADS_DATA_URL = '{{ route('admin.ads.index.data') }}';
+
+    const adsGrid = document.getElementById('adsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const errorState = document.getElementById('errorState');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const totalCount = document.getElementById('totalCount');
+
+    let currentCategory = '{{ $category }}';
+    let currentStatus = '{{ $status }}';
+    let currentPage = 1;
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    }
+
+    function statusLabel(status) {
+        return { active: 'Active', sold: 'Vendue', paused: 'En pause' }[status] ?? status;
+    }
+
+    function adCardHTML(item) {
+        const photoHtml = item.photo_url
+            ? `<img src="${item.photo_url}" alt="${escapeHtml(item.title)}" loading="lazy">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>`;
+
+        return `
+            <a href="${item.show_url}" class="ad-card">
+                <div class="ad-image">
+                    ${photoHtml}
+                    <div class="ad-badges">
+                        <div class="ad-badge category">${item.is_pc ? 'PC' : 'Véhicule'}</div>
+                        <div class="ad-badge ${item.status}">${statusLabel(item.status)}</div>
+                    </div>
+                </div>
+                <div class="ad-content">
+                    <div class="ad-title">${escapeHtml(item.title)}</div>
+                    <div class="ad-price">${escapeHtml(item.price)}</div>
+                    <div class="ad-seller">Vendeur : ${escapeHtml(item.seller)}</div>
+                    <div class="ad-footer">
+                        <span>${escapeHtml(item.city)}</span>
+                        <span>${escapeHtml(item.published_at)}</span>
+                    </div>
+                </div>
+            </a>`;
+    }
+
+    function renderAds(items) {
+        if (!items.length) {
+            adsGrid.style.display = 'none';
+            paginationContainer.innerHTML = '';
+            emptyState.style.display = '';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        adsGrid.style.display = '';
+        adsGrid.innerHTML = items.map(adCardHTML).join('');
+    }
+
+    function renderPagination(pagination) {
+        if (pagination.last_page <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        for (let page = 1; page <= pagination.last_page; page++) {
+            html += `<button type="button" class="page-link ${page === pagination.current_page ? 'active' : ''}" data-page="${page}">${page}</button>`;
+        }
+        paginationContainer.innerHTML = html;
+
+        paginationContainer.querySelectorAll('.page-link').forEach(btn => {
+            btn.addEventListener('click', () => {
+                loadAds(parseInt(btn.dataset.page, 10));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+    }
+
+    function updateUrl() {
+        const params = new URLSearchParams();
+        if (currentCategory) params.set('category', currentCategory);
+        if (currentStatus) params.set('status', currentStatus);
+        const query = params.toString();
+        const url = '{{ route('admin.ads.index') }}' + (query ? '?' + query : '');
+        window.history.replaceState({}, '', url);
+    }
+
+    async function loadAds(page = 1) {
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+        adsGrid.style.display = '';
+        adsGrid.innerHTML = '<div class="ad-skeleton"></div><div class="ad-skeleton"></div><div class="ad-skeleton"></div>';
+
+        try {
+            const { data } = await axios.get(ADMIN_ADS_DATA_URL, {
+                params: { page, category: currentCategory || undefined, status: currentStatus || undefined }
+            });
+            currentPage = data.pagination.current_page;
+            if (totalCount) totalCount.textContent = data.pagination.total;
+            renderAds(data.items);
+            renderPagination(data.pagination);
+        } catch (error) {
+            adsGrid.style.display = 'none';
+            paginationContainer.innerHTML = '';
+            errorState.style.display = '';
+        }
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => loadAds(currentPage));
+
+    document.querySelectorAll('#categoryFilters .filter-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#categoryFilters .filter-link').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = btn.dataset.category;
+            updateUrl();
+            loadAds(1);
+        });
+    });
+
+    document.querySelectorAll('#statusFilters .filter-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#statusFilters .filter-link').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStatus = btn.dataset.status;
+            updateUrl();
+            loadAds(1);
+        });
+    });
+
+    loadAds();
+</script>
 </body>
 </html>

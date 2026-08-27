@@ -1141,6 +1141,19 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
+    /* Désinscrit tout service worker parasite d'un autre projet servi sur le
+       même localhost : un SW cassé peut intercepter la requête axios et
+       provoquer "Response body is already used", ce qui vide le contenu
+       juste après son chargement. */
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(registration => registration.unregister());
+        }).catch(() => {});
+    }
+    if (window.caches && caches.keys) {
+        caches.keys().then(names => names.forEach(name => caches.delete(name))).catch(() => {});
+    }
+
     // ========== Chargement des annonces via axios ==========
     const ADS_DATA_URL = '{{ route('ads.index.data') }}';
 
