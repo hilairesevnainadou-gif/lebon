@@ -203,7 +203,7 @@
 </div>
 
 <script src="{{ asset('js/lebon.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ asset('js/axios.min.js') }}"></script>
 <script>
     // ========== Chargement des annonces PC via axios ==========
     const PC_DATA_URL = '{{ route('pc.index.data') }}';
@@ -300,6 +300,7 @@
             renderAds(data.items);
             renderPagination(data.pagination);
         } catch (error) {
+            console.error('Erreur de chargement des annonces PC :', error);
             adsGrid.style.display = 'none';
             paginationContainer.innerHTML = '';
             errorState.style.display = '';

@@ -1139,7 +1139,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ asset('js/axios.min.js') }}"></script>
 <script>
     /* Désinscrit tout service worker parasite d'un autre projet servi sur le
        même localhost : un SW cassé peut intercepter la requête axios et
@@ -1326,6 +1326,7 @@
             renderAds(data.items);
             renderPagination(data.pagination);
         } catch (error) {
+            console.error('Erreur de chargement des annonces :', error);
             adsGrid.style.display = 'none';
             paginationContainer.innerHTML = '';
             errorState.style.display = '';

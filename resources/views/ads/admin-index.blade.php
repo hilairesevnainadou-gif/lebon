@@ -230,7 +230,7 @@
 </div>
 
 <script src="{{ asset('js/lebon.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ asset('js/axios.min.js') }}"></script>
 <script>
     // ========== Chargement de "Toutes les annonces" via axios ==========
     const ADMIN_ADS_DATA_URL = '{{ route('admin.ads.index.data') }}';
@@ -340,6 +340,7 @@
             renderAds(data.items);
             renderPagination(data.pagination);
         } catch (error) {
+            console.error('Erreur de chargement de toutes les annonces :', error);
             adsGrid.style.display = 'none';
             paginationContainer.innerHTML = '';
             errorState.style.display = '';
