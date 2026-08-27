@@ -13,6 +13,39 @@ use Illuminate\Support\Facades\Storage;
 Route::get('/activation/{token}',  [InvitationController::class, 'show'])->name('invitation.show');
 Route::post('/activation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
 
+// ── DIAGNOSTIC TEMPORAIRE — à retirer une fois le problème résolu ──
+// Le serveur web (Apache/PHP-FPM) semble exécuter un bytecode PHP mis en
+// cache (opcache) plus ancien que le fichier réel sur disque — la CLI
+// (php artisan) recompile toujours à neuf donc ne montre pas le problème.
+Route::get('/opcache-status', function () {
+    $lines = [
+        'opcache chargé      => ' . (extension_loaded('Zend OPcache') ? 'oui' : 'NON (pas le problème alors)'),
+        'opcache.enable      => ' . (ini_get('opcache.enable') ? 'oui' : 'non'),
+        'opcache.enable_cli  => ' . (ini_get('opcache.enable_cli') ? 'oui' : 'non'),
+        'opcache.validate_timestamps => ' . (ini_get('opcache.validate_timestamps') ? 'oui' : 'NON (fichiers modifiés jamais rechargés automatiquement)'),
+        'mtime routes/web.php => ' . date('Y-m-d H:i:s', filemtime(base_path('routes/web.php'))),
+    ];
+
+    if (function_exists('opcache_get_status')) {
+        $status = opcache_get_status(false);
+        $lines[] = 'opcache actif (statut) => ' . ($status ? 'oui' : 'non/désactivé');
+        if ($status && isset($status['scripts'][base_path('routes/web.php')])) {
+            $cached = $status['scripts'][base_path('routes/web.php')];
+            $lines[] = 'routes/web.php EN CACHE depuis => ' . date('Y-m-d H:i:s', $cached['timestamp']);
+        }
+    }
+
+    if (function_exists('opcache_reset')) {
+        $reset = opcache_reset();
+        $lines[] = '';
+        $lines[] = 'opcache_reset() appelé => ' . ($reset ? 'SUCCÈS — cache vidé' : 'échec ou opcache désactivé');
+    } else {
+        $lines[] = 'opcache_reset() indisponible (fonction non trouvée)';
+    }
+
+    return response('<pre>' . e(implode("\n", $lines)) . '</pre>');
+})->name('opcache.debug');
+
 // ── Fichiers du disque "public" servis via PHP ─────────────────
 // Apache (LWS) bloque au niveau serveur toute URL contenant "/storage/"
 // (403 brut, avant même d'atteindre PHP — confirmé : ni Laravel ni un
