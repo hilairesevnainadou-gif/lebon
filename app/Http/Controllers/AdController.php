@@ -50,36 +50,103 @@ class AdController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Récupérer les annonces publiées (admin = tout, sinon seulement les siennes)
-        $publishedAds = $user->isAdmin()
-            ? Ad::with(['vehicle', 'photos'])->category('vehicule')->latest()->get()
-            : Ad::with(['vehicle', 'photos'])
-                ->category('vehicule')
+        // "Mes annonces" : toujours uniquement les annonces du vendeur connecté,
+        // y compris pour un admin (la vue globale existe séparément via admin.ads.index).
+        $totalAds = Ad::category('vehicule')
                 ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
-                ->latest()
-                ->get();
+                ->count()
+            + AdDraft::where('user_id', $user->id)->count();
 
-        // Récupérer les brouillons (admin voit tous les brouillons)
-        $drafts = $user->isAdmin()
-            ? AdDraft::orderBy('updated_at', 'desc')->get()
-            : AdDraft::where('user_id', $user->id)->orderBy('updated_at', 'desc')->get();
-
-        // Fusionner les deux collections
-        $allAds = $publishedAds->concat($drafts)->sortByDesc('updated_at');
-
-        // Paginer manuellement
-        $currentPage = request()->query('page', 1);
-        $perPage = 12;
-        $currentItems = $allAds->slice(($currentPage - 1) * $perPage, $perPage);
-        $ads = new \Illuminate\Pagination\LengthAwarePaginator(
-            $currentItems,
-            $allAds->count(),
-            $perPage,
-            $currentPage,
-            ['path' => route('ads.index')]
-        );
+        // Le contenu (grille + stats détaillées) est chargé côté client via axios,
+        // voir AdController::indexData(). $ads sert uniquement au badge de la sidebar.
+        $ads = new \Illuminate\Pagination\LengthAwarePaginator(collect(), $totalAds, 12, 1);
 
         return view('ads.index', compact('ads'));
+    }
+
+    // ── Données JSON de "Mes annonces" (chargées via axios) ────
+
+    public function indexData(Request $request): JsonResponse
+    {
+        $this->authorizeAdsAccess();
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Toujours filtré sur le seller_id du vendeur connecté, jamais toutes les annonces.
+        $publishedAds = Ad::with(['vehicle', 'photos'])
+            ->category('vehicule')
+            ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
+            ->latest()
+            ->get();
+
+        $drafts = AdDraft::where('user_id', $user->id)
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        $allAds = $publishedAds->concat($drafts)->sortByDesc('updated_at')->values();
+
+        $perPage = 12;
+        $currentPage = max(1, (int) $request->query('page', 1));
+        $items = $allAds->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $data = $items->map(function ($item) {
+            if ($item instanceof AdDraft) {
+                return [
+                    'type'       => 'draft',
+                    'id'         => $item->id,
+                    'title'      => $item->data['ad']['title'] ?? 'Brouillon sans titre',
+                    'price'      => isset($item->data['ad']['price'])
+                        ? number_format((float) $item->data['ad']['price'], 0, ',', ' ') . ' €'
+                        : null,
+                    'city'       => $item->data['ad']['city'] ?? '—',
+                    'brand'      => $item->data['vehicle']['brand'] ?? null,
+                    'year'       => $item->data['vehicle']['year'] ?? null,
+                    'mileage'    => isset($item->data['vehicle']['mileage'])
+                        ? number_format((int) $item->data['vehicle']['mileage'], 0, ',', ' ') . ' km'
+                        : null,
+                    'gearbox'    => isset($item->data['vehicle']['gearbox'])
+                        ? ucfirst((string) $item->data['vehicle']['gearbox'])
+                        : null,
+                    'updated_at' => $item->updated_at->diffForHumans(),
+                    'resume_url' => route('ads.create', ['draft_id' => $item->id]),
+                ];
+            }
+
+            return [
+                'type'         => 'ad',
+                'id'           => $item->id,
+                'status'       => $item->status,
+                'title'        => $item->title,
+                'price'        => $item->formatted_price,
+                'city'         => $item->city,
+                'views'        => $item->views ?? 0,
+                'published_at' => $item->published_at?->diffForHumans() ?? 'Non publiée',
+                'photo_url'    => optional($item->photos->first())->url,
+                'vehicle'      => $item->vehicle ? [
+                    'year'    => $item->vehicle->year,
+                    'mileage' => number_format((int) $item->vehicle->mileage, 0, ',', ' ') . ' km',
+                    'gearbox' => ucfirst((string) $item->vehicle->gearbox),
+                ] : null,
+                'show_url'     => route('ads.show', $item),
+            ];
+        })->values();
+
+        return response()->json([
+            'success'    => true,
+            'stats'      => [
+                'total'  => $allAds->count(),
+                'active' => $publishedAds->where('status', 'active')->count(),
+                'sold'   => $publishedAds->where('status', 'sold')->count(),
+                'views'  => $publishedAds->sum(fn($a) => $a->views ?? 0),
+            ],
+            'items'      => $data,
+            'pagination' => [
+                'current_page' => $currentPage,
+                'last_page'    => max(1, (int) ceil($allAds->count() / $perPage)),
+                'total'        => $allAds->count(),
+            ],
+        ]);
     }
 
     // ── Vue admin : toutes les annonces, toutes catégories, tous statuts ──

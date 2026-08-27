@@ -460,6 +460,20 @@
             opacity: 1;
         }
 
+        /* Skeleton de chargement */
+        .ad-skeleton {
+            height: 320px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(90deg, #eeece6 25%, #f5f4f0 37%, #eeece6 63%);
+            background-size: 400% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
         .ad-action {
             width: 32px;
             height: 32px;
@@ -979,13 +993,6 @@
                 </div>
             @endif
 
-            @php
-                $totalAds = $ads->total();
-                $activeAds = $ads->getCollection()->where('status', 'active')->count();
-                $soldAds = $ads->getCollection()->where('status', 'sold')->count();
-                $totalViews = $ads->getCollection()->sum(fn($a) => $a->views ?? 0);
-            @endphp
-
             <div class="welcome">
                 <h1>
                     Bonjour, {{ auth()->user()->name ?? 'Vendeur' }}
@@ -996,13 +1003,7 @@
                         </span>
                     @endif
                 </h1>
-                <p>
-                    @if(auth()->user()->isAdmin())
-                        Vue administrateur — toutes les annonces et brouillons sont affichés
-                    @else
-                        Voici l'état de vos annonces et statistiques
-                    @endif
-                </p>
+                <p>Voici l'état de vos annonces et statistiques</p>
             </div>
 
             <div class="stats">
@@ -1016,7 +1017,7 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="stat-value">{{ $totalAds }}</div>
+                    <div class="stat-value" id="statTotal">—</div>
                     <div class="stat-sub">annonce(s) publiée(s)</div>
                 </div>
                 <div class="stat-card">
@@ -1029,7 +1030,7 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="stat-value" style="color: var(--green);">{{ $activeAds }}</div>
+                    <div class="stat-value" id="statActive" style="color: var(--green);">—</div>
                     <div class="stat-sub">annonce(s) active(s)</div>
                 </div>
                 <div class="stat-card">
@@ -1041,7 +1042,7 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="stat-value">{{ $soldAds }}</div>
+                    <div class="stat-value" id="statSold">—</div>
                     <div class="stat-sub">transaction(s)</div>
                 </div>
                 <div class="stat-card">
@@ -1054,7 +1055,7 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="stat-value">{{ number_format($totalViews) }}</div>
+                    <div class="stat-value" id="statViews">—</div>
                     <div class="stat-sub">vues cumulées</div>
                 </div>
             </div>
@@ -1076,134 +1077,44 @@
                 </div>
             </div>
 
-            @if($ads->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <line x1="9" y1="9" x2="15" y2="15"/>
-                            <line x1="15" y1="9" x2="9" y2="15"/>
-                        </svg>
-                    </div>
-                    <div class="empty-title">Aucune annonce pour le moment</div>
-                    <div class="empty-text">Publiez votre première annonce et commencez à vendre</div>
-                    <a href="{{ route('ads.create') }}" class="btn-primary">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path d="M12 4v16M4 12h16"/>
-                        </svg>
-                        Créer une annonce
-                    </a>
-                </div>
-            @else
-                <div class="ads-grid" id="adsGrid">
-                    @foreach($ads as $ad)
-                        @if($ad instanceof \App\Models\AdDraft)
-                            {{-- Carte brouillon --}}
-                            <div class="ad-card" data-status="draft">
-                                <div class="ad-image" onclick="window.location='{{ route('ads.create', ['draft_id' => $ad->id]) }}'">
-                                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
-                                        <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24">
-                                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                        </svg>
-                                        <span style="font-size:11px;color:var(--muted);">Non publié</span>
-                                    </div>
-                                    <div class="ad-badge draft">Brouillon</div>
-                                    <div class="ad-actions" onclick="event.stopPropagation()">
-                                        <a href="{{ route('ads.create', ['draft_id' => $ad->id]) }}" class="ad-action" title="Reprendre">
-                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="ad-content" onclick="window.location='{{ route('ads.create', ['draft_id' => $ad->id]) }}'">
-                                    <div class="ad-title">{{ $ad->data['ad']['title'] ?? 'Brouillon sans titre' }}</div>
-                                    @if(!empty($ad->data['ad']['price']))
-                                        <div class="ad-price">{{ number_format((float)$ad->data['ad']['price'], 0, ',', ' ') }} €</div>
-                                    @else
-                                        <div class="ad-price" style="color:var(--muted);font-size:14px;font-weight:600;">Prix non renseigné</div>
-                                    @endif
-                                    @php
-                                        $dBrand   = $ad->data['vehicle']['brand'] ?? null;
-                                        $dYear    = $ad->data['vehicle']['year'] ?? null;
-                                        $dMileage = $ad->data['vehicle']['mileage'] ?? null;
-                                        $dGearbox = $ad->data['vehicle']['gearbox'] ?? null;
-                                    @endphp
-                                    @if($dBrand || $dYear)
-                                        <div class="ad-meta">
-                                            @if($dYear)<span class="ad-meta-item">{{ $dYear }}</span>@endif
-                                            @if($dBrand)<span class="ad-meta-item">{{ $dBrand }}</span>@endif
-                                            @if($dMileage)<span class="ad-meta-item">{{ number_format((int)$dMileage, 0, ',', ' ') }} km</span>@endif
-                                            @if($dGearbox)<span class="ad-meta-item">{{ ucfirst($dGearbox) }}</span>@endif
-                                        </div>
-                                    @endif
-                                    <div class="ad-footer">
-                                        <span>{{ $ad->data['ad']['city'] ?? '—' }}</span>
-                                        <span>{{ $ad->updated_at->diffForHumans() }}</span>
-                                        <span>Brouillon</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            {{-- Carte annonce publiée --}}
-                            <div class="ad-card" data-status="{{ $ad->status }}">
-                                <div class="ad-image" onclick="window.location='{{ route('ads.show', $ad) }}'">
-                                    @if($ad->photos && $ad->photos->isNotEmpty())
-                                        <img src="{{ $ad->photos->first()->url }}" alt="{{ $ad->title }}" loading="lazy">
-                                    @else
-                                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                                            <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24">
-                                                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                                <polyline points="21 15 16 10 5 21"/>
-                                            </svg>
-                                        </div>
-                                    @endif
-                                    <div class="ad-badge {{ $ad->status }}">
-                                        @switch($ad->status)
-                                            @case('active') Active @break
-                                            @case('sold') Vendue @break
-                                            @case('paused') En pause @break
-                                            @default {{ $ad->status }}
-                                        @endswitch
-                                    </div>
-                                    <div class="ad-actions" onclick="event.stopPropagation()">
-                                        <a href="{{ route('ads.show', $ad) }}" class="ad-action">
-                                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                <circle cx="12" cy="12" r="3"/>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="ad-content" onclick="window.location='{{ route('ads.show', $ad) }}'">
-                                    <div class="ad-title">{{ $ad->title }}</div>
-                                    <div class="ad-price">{{ $ad->formatted_price }}</div>
-                                    @if($ad->vehicle)
-                                        <div class="ad-meta">
-                                            <span class="ad-meta-item">{{ $ad->vehicle->year }}</span>
-                                            <span class="ad-meta-item">{{ number_format($ad->vehicle->mileage, 0, ',', ' ') }} km</span>
-                                            <span class="ad-meta-item">{{ ucfirst($ad->vehicle->gearbox) }}</span>
-                                        </div>
-                                    @endif
-                                    <div class="ad-footer">
-                                        <span>{{ $ad->city }}</span>
-                                        <span>{{ $ad->published_at?->diffForHumans() ?? 'Non publiée' }}</span>
-                                        <span>{{ $ad->views ?? 0 }} vues</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
+            <div class="ads-grid" id="adsGrid" aria-live="polite">
+                <div class="ad-skeleton"></div>
+                <div class="ad-skeleton"></div>
+                <div class="ad-skeleton"></div>
+            </div>
 
-                @if($ads->hasPages())
-                    <div class="pagination">
-                        {{ $ads->links() }}
-                    </div>
-                @endif
-            @endif
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                    </svg>
+                </div>
+                <div class="empty-title">Aucune annonce pour le moment</div>
+                <div class="empty-text">Publiez votre première annonce et commencez à vendre</div>
+                <a href="{{ route('ads.create') }}" class="btn-primary">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path d="M12 4v16M4 12h16"/>
+                    </svg>
+                    Créer une annonce
+                </a>
+            </div>
+
+            <div class="empty-state" id="errorState" style="display:none;">
+                <div class="empty-icon" style="background:var(--red-light);">
+                    <svg fill="none" stroke="var(--red)" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="empty-title">Impossible de charger vos annonces</div>
+                <div class="empty-text">Une erreur est survenue lors du chargement. Veuillez réessayer.</div>
+                <button type="button" class="btn-primary" id="retryBtn" style="border:none;">Réessayer</button>
+            </div>
+
+            <div class="pagination" id="paginationContainer"></div>
         </div>
     </div>
 </div>
@@ -1228,26 +1139,198 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    // Filtrage par statut
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const cards = document.querySelectorAll('.ad-card');
+    // ========== Chargement des annonces via axios ==========
+    const ADS_DATA_URL = '{{ route('ads.index.data') }}';
 
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const filter = btn.dataset.filter;
+    const adsGrid = document.getElementById('adsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const errorState = document.getElementById('errorState');
+    const paginationContainer = document.getElementById('paginationContainer');
 
-            cards.forEach(card => {
-                if (filter === 'all' || card.dataset.status === filter) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
+    let currentFilter = 'all';
+    let currentPage = 1;
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    }
+
+    function statusLabel(status) {
+        return { active: 'Active', sold: 'Vendue', paused: 'En pause' }[status] ?? status;
+    }
+
+    function draftCardHTML(item) {
+        const priceHtml = item.price
+            ? `<div class="ad-price">${escapeHtml(item.price)}</div>`
+            : `<div class="ad-price" style="color:var(--muted);font-size:14px;font-weight:600;">Prix non renseigné</div>`;
+
+        const metaHtml = (item.brand || item.year) ? `
+            <div class="ad-meta">
+                ${item.year ? `<span class="ad-meta-item">${escapeHtml(item.year)}</span>` : ''}
+                ${item.brand ? `<span class="ad-meta-item">${escapeHtml(item.brand)}</span>` : ''}
+                ${item.mileage ? `<span class="ad-meta-item">${escapeHtml(item.mileage)}</span>` : ''}
+                ${item.gearbox ? `<span class="ad-meta-item">${escapeHtml(item.gearbox)}</span>` : ''}
+            </div>` : '';
+
+        return `
+            <div class="ad-card" data-status="draft">
+                <div class="ad-image" onclick="window.location='${item.resume_url}'">
+                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+                        <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span style="font-size:11px;color:var(--muted);">Non publié</span>
+                    </div>
+                    <div class="ad-badge draft">Brouillon</div>
+                    <div class="ad-actions" onclick="event.stopPropagation()">
+                        <a href="${item.resume_url}" class="ad-action" title="Reprendre">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="ad-content" onclick="window.location='${item.resume_url}'">
+                    <div class="ad-title">${escapeHtml(item.title)}</div>
+                    ${priceHtml}
+                    ${metaHtml}
+                    <div class="ad-footer">
+                        <span>${escapeHtml(item.city)}</span>
+                        <span>${escapeHtml(item.updated_at)}</span>
+                        <span>Brouillon</span>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function adCardHTML(item) {
+        const photoHtml = item.photo_url
+            ? `<img src="${item.photo_url}" alt="${escapeHtml(item.title)}" loading="lazy">`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </div>`;
+
+        const vehicleHtml = item.vehicle ? `
+            <div class="ad-meta">
+                <span class="ad-meta-item">${escapeHtml(item.vehicle.year)}</span>
+                <span class="ad-meta-item">${escapeHtml(item.vehicle.mileage)}</span>
+                <span class="ad-meta-item">${escapeHtml(item.vehicle.gearbox)}</span>
+            </div>` : '';
+
+        return `
+            <div class="ad-card" data-status="${item.status}">
+                <div class="ad-image" onclick="window.location='${item.show_url}'">
+                    ${photoHtml}
+                    <div class="ad-badge ${item.status}">${statusLabel(item.status)}</div>
+                    <div class="ad-actions" onclick="event.stopPropagation()">
+                        <a href="${item.show_url}" class="ad-action">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="ad-content" onclick="window.location='${item.show_url}'">
+                    <div class="ad-title">${escapeHtml(item.title)}</div>
+                    <div class="ad-price">${escapeHtml(item.price)}</div>
+                    ${vehicleHtml}
+                    <div class="ad-footer">
+                        <span>${escapeHtml(item.city)}</span>
+                        <span>${escapeHtml(item.published_at)}</span>
+                        <span>${item.views} vues</span>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function renderStats(stats) {
+        document.getElementById('statTotal').textContent = stats.total;
+        document.getElementById('statActive').textContent = stats.active;
+        document.getElementById('statSold').textContent = stats.sold;
+        document.getElementById('statViews').textContent = new Intl.NumberFormat('fr-FR').format(stats.views);
+    }
+
+    function applyFilter(filter) {
+        currentFilter = filter;
+        adsGrid.querySelectorAll('.ad-card').forEach(card => {
+            card.style.display = (filter === 'all' || card.dataset.status === filter) ? '' : 'none';
+        });
+    }
+
+    function renderAds(items) {
+        if (!items.length) {
+            adsGrid.style.display = 'none';
+            paginationContainer.innerHTML = '';
+            emptyState.style.display = '';
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        adsGrid.style.display = '';
+        adsGrid.innerHTML = items.map(item => item.type === 'draft' ? draftCardHTML(item) : adCardHTML(item)).join('');
+        applyFilter(currentFilter);
+    }
+
+    function renderPagination(pagination) {
+        if (pagination.last_page <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        for (let page = 1; page <= pagination.last_page; page++) {
+            html += `<button type="button" class="page-link ${page === pagination.current_page ? 'active' : ''}" data-page="${page}">${page}</button>`;
+        }
+        paginationContainer.innerHTML = html;
+
+        paginationContainer.querySelectorAll('.page-link').forEach(btn => {
+            btn.addEventListener('click', () => {
+                loadAds(parseInt(btn.dataset.page, 10));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
+    }
+
+    async function loadAds(page = 1) {
+        errorState.style.display = 'none';
+        emptyState.style.display = 'none';
+        adsGrid.style.display = '';
+        adsGrid.innerHTML = '<div class="ad-skeleton"></div><div class="ad-skeleton"></div><div class="ad-skeleton"></div>';
+
+        try {
+            const { data } = await axios.get(ADS_DATA_URL, { params: { page } });
+            currentPage = data.pagination.current_page;
+            renderStats(data.stats);
+            renderAds(data.items);
+            renderPagination(data.pagination);
+        } catch (error) {
+            adsGrid.style.display = 'none';
+            paginationContainer.innerHTML = '';
+            errorState.style.display = '';
+        }
+    }
+
+    document.getElementById('retryBtn').addEventListener('click', () => loadAds(currentPage));
+
+    // Filtrage par statut
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilter(btn.dataset.filter);
+        });
     });
+
+    loadAds();
 
     // Modal de déconnexion
     function openLogoutModal() {

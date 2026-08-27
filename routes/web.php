@@ -78,6 +78,7 @@ Route::post('/b9m2r', [AuthController::class, 'logout'])->name('logout');
 // ── Zone authentifiée ─────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/d6t1z',              [AdController::class, 'index'])->name('ads.index');
+    Route::get('/d6t1z/data',         [AdController::class, 'indexData'])->name('ads.index.data');
     Route::get('/d6t1z/creer',        [AdController::class, 'create'])->name('ads.create');
     Route::post('/d6t1z',             [AdController::class, 'store'])->name('ads.store');
 
