@@ -71,6 +71,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/d6t1z/brouillon/{id}/reprendre',[AdController::class, 'resumeDraft'])->name('ads.draft.resume');
     Route::delete('/d6t1z/brouillon/{id}',       [AdController::class, 'deleteDraft'])->name('ads.draft.delete');
 
+    // Espace annonces PC (nécessite la permission menu.pc.view)
+    // IMPORTANT : ce bloc doit rester déclaré avant les routes génériques
+    // /d6t1z/{ad} ci-dessous, sinon "pc" est interprété comme un id d'annonce
+    // (Laravel matche les routes dans l'ordre de déclaration) et pc.index
+    // devient inatteignable (404 au lieu de la liste des annonces PC).
+    Route::get('/d6t1z/pc',           [PcAdController::class, 'index'])->name('pc.index');
+    Route::get('/d6t1z/pc/creer',     [PcAdController::class, 'create'])->name('pc.create');
+    Route::post('/d6t1z/pc',          [PcAdController::class, 'store'])->name('pc.store');
+    Route::get('/d6t1z/pc/{ad}',      [PcAdController::class, 'show'])->name('pc.show');
+
     Route::get('/d6t1z/{ad}',                      [AdController::class, 'show'])->name('ads.show');
     Route::get('/d6t1z/{ad}/editer',               [AdController::class, 'edit'])->name('ads.edit');
     Route::put('/d6t1z/{ad}',                      [AdController::class, 'update'])->name('ads.update');
@@ -78,12 +88,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/d6t1z/{ad}/photos/reorder',      [AdController::class, 'reorderPhotos'])->name('ads.photos.reorder');
     Route::get('/d6t1z/{ad}/partager',             [AdController::class, 'share'])->name('ads.share');
     Route::patch('/d6t1z/{ad}/statut',             [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
-
-    // Espace annonces PC (nécessite la permission menu.pc.view)
-    Route::get('/d6t1z/pc',           [PcAdController::class, 'index'])->name('pc.index');
-    Route::get('/d6t1z/pc/creer',     [PcAdController::class, 'create'])->name('pc.create');
-    Route::post('/d6t1z/pc',          [PcAdController::class, 'store'])->name('pc.store');
-    Route::get('/d6t1z/pc/{ad}',      [PcAdController::class, 'show'])->name('pc.show');
 
     // Gestion des utilisateurs (admin uniquement)
     Route::middleware('admin')->group(function () {

@@ -26,12 +26,7 @@ class PcAdController extends Controller
     private function authorizePcAd(Ad $ad): void
     {
         $this->authorizePcAccess();
-
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        if (!$user->isAdmin() && ($ad->seller === null || $ad->seller->user_id !== $user->id)) {
-            abort(403);
-        }
+        abort_unless(Auth::user()->can('manage', $ad), 403);
     }
 
     // ── Liste des annonces PC ─────────────────────────────────

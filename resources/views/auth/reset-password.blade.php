@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Réinitialiser le mot de passe</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         body {
             background: var(--navy);

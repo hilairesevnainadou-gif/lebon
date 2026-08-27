@@ -13,9 +13,11 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
+        // Note : l'accès à la gestion des utilisateurs n'est pas une permission
+        // ici — il est contrôlé uniquement par is_admin (middleware "admin"),
+        // voir UserController et AdminMiddleware.
         $permissions = [
             ['name' => 'Voir mes annonces', 'slug' => 'menu.ads.view'],
-            ['name' => 'Gérer les utilisateurs', 'slug' => 'menu.users.view'],
             ['name' => 'Voir l\'espace annonces PC', 'slug' => 'menu.pc.view'],
         ];
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Toutes les annonces - Administration</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         .stats-row {
             display: grid;
@@ -258,6 +258,6 @@
     </div>
 </div>
 
-<script src="/js/lebon.js"></script>
+<script src="{{ asset('js/lebon.js') }}"></script>
 </body>
 </html>

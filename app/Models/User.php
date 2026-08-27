@@ -104,7 +104,11 @@ class User extends Authenticatable
 
     public function hasPermission(string $slug): bool
     {
-        return $this->isAdmin() || $this->permissions->contains('slug', $slug);
+        if ($this->isAdmin() || $this->permissions->contains('slug', $slug)) {
+            return true;
+        }
+
+        return $this->role?->hasPermission($slug) ?? false;
     }
 
     public function isActivated(): bool

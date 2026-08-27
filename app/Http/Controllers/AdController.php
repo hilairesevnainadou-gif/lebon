@@ -24,21 +24,29 @@ use Illuminate\View\View;
 
 class AdController extends Controller
 {
+    // ── Autorisation : accès à l'espace annonces véhicule ────────
+
+    private function authorizeAdsAccess(): void
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        abort_unless($user->hasPermission('menu.ads.view'), 403);
+    }
+
     // ── Autorisation : vendeur ne peut agir que sur ses annonces ─
 
     private function authorizeAd(Ad $ad): void
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        if (!$user->isAdmin() && ($ad->seller === null || $ad->seller->user_id !== $user->id)) {
-            abort(403);
-        }
+        $this->authorizeAdsAccess();
+        abort_unless(Auth::user()->can('manage', $ad), 403);
     }
 
     // ── Liste des annonces (publiées + brouillons) ────────────
 
     public function index(): View
     {
+        $this->authorizeAdsAccess();
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -114,6 +122,8 @@ class AdController extends Controller
 
     public function create(Request $request): View
     {
+        $this->authorizeAdsAccess();
+
         $draftData = null;
 
         // Vérifier si on reprend un brouillon
@@ -125,9 +135,7 @@ class AdController extends Controller
                 ->first();
 
             if ($draft) {
-                $draftData = $draft->data;
-                // Optionnel: supprimer le brouillon après récupération
-                // $draft->delete();
+                $draftData = array_merge($draft->data, ['id' => $draft->id]);
             }
         } elseif (session('draft')) {
             $draftData = session('draft');
@@ -140,6 +148,8 @@ class AdController extends Controller
 
     public function store(StoreAdRequest $request): RedirectResponse
 {
+    $this->authorizeAdsAccess();
+
     DB::beginTransaction();
 
     /** @var Ad|null $ad */
@@ -283,9 +293,16 @@ class AdController extends Controller
 
         if ($request->has('draft_id')) {
 
-            AdDraft::where('id', $request->draft_id)
+            $draftToClear = AdDraft::where('id', $request->draft_id)
                 ->where('user_id', $user->id)
-                ->delete();
+                ->first();
+
+            if ($draftToClear) {
+                foreach ($draftToClear->data['draft_photos'] ?? [] as $draftPhotoPath) {
+                    Storage::disk('public')->delete($draftPhotoPath);
+                }
+                $draftToClear->delete();
+            }
         }
 
         // ─────────────────────────────────────────────
@@ -783,6 +800,8 @@ class AdController extends Controller
 
     public function saveDraft(Request $request): JsonResponse
     {
+        $this->authorizeAdsAccess();
+
         try {
             /** @var \App\Models\User $user */
             $user = Auth::user();
@@ -842,6 +861,8 @@ class AdController extends Controller
 
     public function getDrafts(): JsonResponse
     {
+        $this->authorizeAdsAccess();
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -859,6 +880,8 @@ class AdController extends Controller
 
     public function resumeDraft($id): RedirectResponse
     {
+        $this->authorizeAdsAccess();
+
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
@@ -873,13 +896,24 @@ class AdController extends Controller
 
     public function deleteDraft($id): JsonResponse
     {
+        $this->authorizeAdsAccess();
+
         try {
             /** @var \App\Models\User $user */
             $user = Auth::user();
 
-            $deleted = AdDraft::where('id', $id)
+            $draft = AdDraft::where('id', $id)
                 ->where('user_id', $user->id)
-                ->delete();
+                ->first();
+
+            $deleted = false;
+
+            if ($draft) {
+                foreach ($draft->data['draft_photos'] ?? [] as $draftPhotoPath) {
+                    Storage::disk('public')->delete($draftPhotoPath);
+                }
+                $deleted = (bool) $draft->delete();
+            }
 
             if ($deleted) {
                 return response()->json([

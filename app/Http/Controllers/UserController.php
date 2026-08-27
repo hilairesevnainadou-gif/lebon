@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\UserInvitation;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,8 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        $users = User::orderBy('is_admin', 'desc')
+        $users = User::with('role')
+            ->orderBy('is_admin', 'desc')
             ->orderBy('name')
             ->paginate(20);
 
@@ -26,11 +28,10 @@ class UserController extends Controller
 
     public function create(): View
     {
-        // "menu.users.view" est exclu : l'accès à la gestion des utilisateurs
-        // est déjà contrôlé par le bouton "Administrateur" (middleware admin = isAdmin()).
-        $permissions = Permission::where('slug', '!=', 'menu.users.view')->orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+        $roles = Role::orderBy('name')->get();
 
-        return view('users.create', ['user' => null, 'permissions' => $permissions]);
+        return view('users.create', ['user' => null, 'permissions' => $permissions, 'roles' => $roles]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -39,6 +40,7 @@ class UserController extends Controller
             'name'          => ['required', 'string', 'max:100'],
             'email'         => ['required', 'email', 'max:255', 'unique:users,email'],
             'is_admin'      => ['nullable', 'boolean'],
+            'role_id'       => ['nullable', 'integer', 'exists:roles,id'],
             'permissions'   => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
@@ -54,6 +56,7 @@ class UserController extends Controller
             'email'            => $data['email'],
             'password'         => Hash::make(Str::random(32)),
             'is_admin'         => $request->boolean('is_admin'),
+            'role_id'          => $data['role_id'] ?? null,
             'invitation_token' => $token,
         ]);
 
@@ -69,9 +72,10 @@ class UserController extends Controller
     public function edit(User $user): View
     {
         $permissions = Permission::where('slug', '!=', 'menu.users.view')->orderBy('name')->get();
+        $roles = Role::orderBy('name')->get();
         $user->load('permissions');
 
-        return view('users.create', compact('user', 'permissions'));
+        return view('users.create', compact('user', 'permissions', 'roles'));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -81,6 +85,7 @@ class UserController extends Controller
             'email'         => ['required', 'email', 'max:255', "unique:users,email,{$user->id}"],
             'password'      => ['nullable', 'confirmed', Password::min(8)->letters()->numbers()],
             'is_admin'      => ['nullable', 'boolean'],
+            'role_id'       => ['nullable', 'integer', 'exists:roles,id'],
             'permissions'   => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ], [
@@ -94,6 +99,7 @@ class UserController extends Controller
         $user->name     = $data['name'];
         $user->email    = $data['email'];
         $user->is_admin = $request->boolean('is_admin');
+        $user->role_id  = $data['role_id'] ?? null;
 
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);

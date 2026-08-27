@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{{ $user ? 'Modifier l\'utilisateur' : 'Créer un utilisateur' }}</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         .form-card {
             background: var(--card);
@@ -347,6 +347,30 @@
                     @endif
 
                     <div class="form-group">
+                        <label class="form-label" for="role_id">Rôle</label>
+                        <select
+                            id="role_id"
+                            name="role_id"
+                            class="form-control @error('role_id') is-error @enderror"
+                        >
+                            <option value="">Aucun rôle</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}" @selected(old('role_id', $user?->role_id) == $role->id)>
+                                    {{ $role->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('role_id')
+                            <div class="field-error">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                {{ $message }}
+                            </div>
+                        @else
+                            <div class="hint">Le rôle accorde automatiquement ses permissions. Les cases ci-dessous permettent d'en ajouter d'autres au cas par cas.</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">Vues accessibles</label>
                         @php
                             $checkedPermissionIds = old('permissions', $user?->permissions->pluck('id')->all() ?? []);
@@ -428,7 +452,7 @@
     </div>
 </div>
 
-<script src="/js/lebon.js"></script>
+<script src="{{ asset('js/lebon.js') }}"></script>
 <script>
 function toggleAdmin() {
     const input  = document.getElementById('isAdminInput');

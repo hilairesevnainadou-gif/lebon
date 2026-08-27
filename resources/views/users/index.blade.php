@@ -4,17 +4,19 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Gestion des utilisateurs</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         .table-wrap {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            overflow: hidden;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         table {
             width: 100%;
+            min-width: 640px;
             border-collapse: collapse;
         }
 
@@ -207,8 +209,10 @@
                                             <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
                                             Admin
                                         </span>
+                                    @elseif($user->role)
+                                        <span class="role-badge role-user">{{ $user->role->name }}</span>
                                     @else
-                                        <span class="role-badge role-user">Vendeur</span>
+                                        <span class="role-badge role-user" style="opacity:.6;">Aucun rôle</span>
                                     @endif
                                 </td>
                                 <td style="color:var(--muted);font-size:13px;">
@@ -289,11 +293,11 @@
     </div>
 </div>
 
-<script src="/js/lebon.js"></script>
+<script src="{{ asset('js/lebon.js') }}"></script>
 <script>
 function confirmDelete(id, name) {
     document.getElementById('deleteModalText').textContent = 'Supprimer le compte de "' + name + '" ? Cette action est irréversible.';
-    document.getElementById('deleteForm').action = '/utilisateurs/' + id;
+    document.getElementById('deleteForm').action = '{{ route('users.destroy', ['user' => 'USER_ID']) }}'.replace('USER_ID', id);
     document.getElementById('deleteModal').classList.add('open');
 }
 </script>

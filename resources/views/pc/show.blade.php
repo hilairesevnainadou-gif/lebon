@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{{ $ad->title }} - Espace Vendeur</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         .ad-header {
             display: flex;
@@ -63,6 +63,7 @@
         }
 
         .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 480px) { .spec-grid { grid-template-columns: 1fr; } }
 
         .spec-item { font-size: 13px; }
         .spec-label { color: var(--muted); margin-bottom: 2px; }
@@ -221,6 +222,6 @@
     </div>
 </div>
 
-<script src="/js/lebon.js"></script>
+<script src="{{ asset('js/lebon.js') }}"></script>
 </body>
 </html>

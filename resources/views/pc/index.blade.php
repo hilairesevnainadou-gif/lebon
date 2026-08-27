@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Annonces PC - Espace Vendeur</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         .ads-grid {
             display: grid;
@@ -208,6 +208,6 @@
     </div>
 </div>
 
-<script src="/js/lebon.js"></script>
+<script src="{{ asset('js/lebon.js') }}"></script>
 </body>
 </html>

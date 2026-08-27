@@ -9,6 +9,7 @@
         <span>le<em>bon</em>coin</span>
     </div>
     <nav class="sidebar-nav">
+        @if(auth()->user()->hasPermission('menu.ads.view'))
         <a href="{{ route('ads.index') }}"
            class="nav-item {{ request()->routeIs('ads.*') ? 'active' : '' }}"
            style="text-decoration:none;">
@@ -21,6 +22,7 @@
                 <span class="nav-badge">{{ $ads->total() }}</span>
             @endisset
         </a>
+        @endif
 
         @if(auth()->user()->hasPermission('menu.pc.view'))
         <a href="{{ route('pc.index') }}"
@@ -49,7 +51,7 @@
         </a>
         @endif
 
-        @if(auth()->user()->hasPermission('menu.users.view'))
+        @if(auth()->user()->isAdmin())
         <a href="{{ route('users.index') }}"
            class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
            style="text-decoration:none;">
@@ -94,6 +96,7 @@
         <span>le<em>bon</em>coin</span>
     </div>
     <nav class="sidebar-nav">
+        @if(auth()->user()->hasPermission('menu.ads.view'))
         <a href="{{ route('ads.index') }}"
            class="nav-item {{ request()->routeIs('ads.*') ? 'active' : '' }}"
            style="text-decoration:none;">
@@ -103,6 +106,7 @@
             </svg>
             <span class="nav-text">Mes annonces</span>
         </a>
+        @endif
 
         @if(auth()->user()->hasPermission('menu.pc.view'))
         <a href="{{ route('pc.index') }}"
@@ -117,7 +121,7 @@
         </a>
         @endif
 
-        @if(auth()->user()->hasPermission('menu.users.view'))
+        @if(auth()->user()->isAdmin())
         <a href="{{ route('users.index') }}"
            class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
            style="text-decoration:none;">

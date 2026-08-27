@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
     <title>{{ $ad->title }} - Espace Vendeur</title>
-    <link rel="stylesheet" href="/css/lebon.css"/>
+    <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         /* ---- Page : détail annonce ---- */
 
@@ -690,7 +690,7 @@
     </div>
 </div>
 
-<script src="/js/lebon.js"></script>
+<script src="{{ asset('js/lebon.js') }}"></script>
 <script>
 async function toggleLike() {
     const btn      = document.getElementById('likeBtn');
