@@ -46,7 +46,11 @@ return [
             // même que la requête n'atteigne PHP. Voir routes/web.php.
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
             'visibility' => 'public',
-            'throw' => false,
+            // "true" : un échec d'écriture (permissions, quota disque...) doit
+            // lever une exception visible plutôt que d'être avalé en silence,
+            // ce qui créait une annonce avec des photos "fantômes" en base
+            // (chemin enregistré mais fichier jamais réellement écrit).
+            'throw' => true,
             'report' => false,
         ],
 
