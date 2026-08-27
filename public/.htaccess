@@ -5,13 +5,6 @@
 
     RewriteEngine On
 
-    # Forcer /media/* à passer par Laravel (PHP) plutôt que par le
-    # gestionnaire statique d'Apache. Note : sur certains hébergeurs
-    # mutualisés (LWS), Apache bloque au niveau serveur toute URL
-    # contenant "/storage/" avant même le passage par .htaccess — d'où
-    # l'usage de "/media/" comme préfixe (voir config/filesystems.php).
-    RewriteRule ^media/ index.php [L]
-
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

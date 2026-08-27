@@ -7,62 +7,10 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PcAdController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 
 // ── Activation de compte (invitation admin) ───────────────────
 Route::get('/activation/{token}',  [InvitationController::class, 'show'])->name('invitation.show');
 Route::post('/activation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
-
-// ── Fichiers du disque "public" servis via PHP ─────────────────
-// Contourne les hébergeurs mutualisés (ex: LWS) qui bloquent au
-// niveau Apache toute URL contenant "/storage/" (403 brut, avant
-// même d'atteindre PHP — un .htaccess ne peut pas passer outre).
-// D'où le préfixe "/media/" à la place de "/storage/".
-Route::get('/media/{path}', function (string $path) {
-    $disk = Storage::disk('public');
-
-    abort_unless($disk->exists($path), 404);
-
-    $fullPath = $disk->path($path);
-
-    return response()->file($fullPath, [
-        'Content-Type' => $disk->mimeType($path) ?? 'application/octet-stream',
-    ]);
-})->where('path', '.*')->name('storage.local');
-
-// ── DIAGNOSTIC TEMPORAIRE — à supprimer une fois le problème résolu ──
-Route::get('/mediacheck', function () {
-    $disk = Storage::disk('public');
-    $testPath = 'annonces/23/photos/12462c1b-6ee5-4c32-89ce-5e40df304c52.png';
-
-    $lines = [
-        'base_path()                => ' . base_path(),
-        'storage_path()             => ' . storage_path(),
-        'storage_path("app/public") => ' . storage_path('app/public'),
-        'realpath(storage/app/public) => ' . (realpath(storage_path('app/public')) ?: '(realpath a échoué / inaccessible)'),
-        'is_dir(storage/app/public) => ' . (is_dir(storage_path('app/public')) ? 'oui' : 'NON'),
-        'is_readable(storage/app/public) => ' . (is_readable(storage_path('app/public')) ? 'oui' : 'NON'),
-        'ini_get(open_basedir)      => ' . (ini_get('open_basedir') ?: '(vide, pas de restriction)'),
-        '',
-        'Chemin testé : ' . $testPath,
-        'Storage::disk(public)->exists() => ' . ($disk->exists($testPath) ? 'oui' : 'NON'),
-        'Storage::disk(public)->path()   => ' . $disk->path($testPath),
-        'file_exists() direct sur ce chemin => ' . (file_exists($disk->path($testPath)) ? 'oui' : 'NON'),
-        '',
-        'Contenu de storage/app/public/annonces/23/photos :',
-    ];
-
-    $photosDir = storage_path('app/public/annonces/23/photos');
-    if (is_dir($photosDir)) {
-        foreach (scandir($photosDir) as $f) {
-            $lines[] = '  - ' . $f;
-        }
-    } else {
-        $lines[] = '  (dossier introuvable ou inaccessible depuis PHP)';
-    }
-
-    return response('<pre>' . e(implode("\n", $lines)) . '</pre>');
-})->name('mediacheck.debug');
 
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
