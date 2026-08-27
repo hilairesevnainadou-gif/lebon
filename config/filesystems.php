@@ -9,7 +9,7 @@ return [
     |
     | Here you may specify the default filesystem disk that should be used
     | by the framework. The "local" disk, as well as a variety of cloud
-    | based disks are available to your application for file storage.
+    | based disks are available to your application. Just store away!
     |
     */
 
@@ -20,11 +20,11 @@ return [
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
-    | Below you may configure as many filesystem disks as necessary, and you
-    | may even configure multiple disks for the same driver. Examples for
-    | most supported storage drivers are configured here for reference.
+    | Here you may configure as many filesystem "disks" as you wish, and you
+    | may even configure multiple disks of the same driver. Defaults have
+    | been set up for each driver as an example of the required values.
     |
-    | Supported drivers: "local", "ftp", "sftp", "s3"
+    | Supported Drivers: "local", "ftp", "sftp", "s3"
     |
     */
 
@@ -32,29 +32,16 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
-            'serve' => false,
+            'root' => storage_path('app'),
             'throw' => false,
-            'report' => false,
         ],
 
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            // "/media" et non "/storage" : l'hébergeur (LWS) renvoie un 403
-            // (Content-Type text/html) au niveau serveur sur toute URL
-            // contenant "/storage/", avant même que PHP ne s'exécute.
-            // Le lien symbolique "media" (voir 'links' plus bas) pointe vers
-            // le même dossier réel et est servi en fichier statique par
-            // Apache normalement — pas de contournement PHP nécessaire.
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/media',
+            'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
-            // "true" : un échec d'écriture (permissions, quota disque...) doit
-            // lever une exception visible plutôt que d'être avalé en silence,
-            // ce qui créait une annonce avec des photos "fantômes" en base
-            // (chemin enregistré mais fichier jamais réellement écrit).
-            'throw' => true,
-            'report' => false,
+            'throw' => false,
         ],
 
         's3' => [
@@ -67,7 +54,6 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
-            'report' => false,
         ],
 
     ],
@@ -85,7 +71,6 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
-        public_path('media') => storage_path('app/public'),
     ],
 
 ];
