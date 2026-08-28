@@ -717,7 +717,7 @@
 {{-- ── LOCALISATION ─────────────────────────── --}}
 <div class="section" id="mapSection">
     <h2 class="section-h2">Localisation</h2>
-    <p class="loc-city">{{ $ad->city }}<span>({{ $ad->vehicle?->zipcode ?? '68460' }})</span></p>
+    <p class="loc-city">{{ $ad->city }}@if($ad->postal_code)<span>({{ $ad->postal_code }})</span>@endif</p>
     <div class="map-box" onclick="this.querySelector('iframe') && this.querySelector('iframe').style.setProperty('pointer-events','all')">
         <div id="leaflet-map" style="width:100%;height:100%;background:linear-gradient(135deg,#c8e6c9 0%,#a5d6a7 50%,#81c784 100%);display:flex;align-items:center;justify-content:center;">
             <svg width="32" height="32" viewBox="0 0 24 24" style="fill:#2e7d32;opacity:.6;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
